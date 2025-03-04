@@ -15,8 +15,6 @@ public:
     using WindowType = struct GLFWwindow*;
     using WindowReizeDelegate = korelib::Delegate<void, uint32_t, uint32_t>;
 
-    using VertexBufferObjectType = uint32_t;
-
     static constexpr auto DEFAULT_VERTEX_SHADER = R"(
         #version 460 core
         layout (location = 0) in vec3 inPos;
