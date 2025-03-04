@@ -7,10 +7,12 @@ include(FetchContent)
 
 FetchContent_Declare(glfw GIT_REPOSITORY https://github.com/glfw/glfw.git GIT_TAG 3.4)
 FetchContent_Declare(glad GIT_REPOSITORY https://github.com/Dav1dde/glad.git GIT_TAG v0.1.36)
+FetchContent_Declare(glm GIT_REPOSITORY	https://github.com/g-truc/glm.git GIT_TAG 1.0.1)
 FetchContent_Declare(korelib GIT_REPOSITORY https://github.com/cyberduck1337/korelib.git GIT_TAG master)
 
 FetchContent_MakeAvailable(glfw)
 FetchContent_MakeAvailable(glad)
+FetchContent_MakeAvailable(glm)
 FetchContent_MakeAvailable(korelib)
 
 add_executable(learnopengl
@@ -23,4 +25,5 @@ target_link_libraries(learnopengl PUBLIC
     korelib
     glfw
     glad
+    glm
 )
