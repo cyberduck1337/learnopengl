@@ -114,6 +114,9 @@ public:
     static VertexArrayObjectType createVertexArrayObject();
     static ShaderType compileShader(const std::string& source, ShaderKind kind);
     static ShaderType linkShaderProgram(ShaderType vertexShader, ShaderType fragmentShader);
+    static void setShaderUniformBoolValue(ShaderType shaderProgram, const std::string& name, bool value);
+    static void setShaderUniformIntValue(ShaderType shaderProgram, const std::string& name, int32_t value);
+    static void setShaderUniformIntValue(ShaderType shaderProgram, const std::string& name, float value);
     static void destroyShader(ShaderType shader);
     static void drawIndexedGeometry(const std::vector<Vertex>& vertecies, const std::vector<uint32_t>& indicies, ShaderType shaderProgram, VertexBufferObjectType vertexBufferObject, VertexArrayObjectType vertexArrayObject, const std::vector<Attribute>& attributesDataOffsets);
     static void endFrame();

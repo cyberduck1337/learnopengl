@@ -171,6 +171,21 @@ Gfx::ShaderType Gfx::linkShaderProgram(ShaderType vertexShader, ShaderType fragm
     return shaderProgram;
 }
 
+void Gfx::setShaderUniformBoolValue(ShaderType shaderProgram, const std::string& name, bool value)
+{
+    glUniform1i(glGetUniformLocation(shaderProgram, name.c_str()), static_cast<uint32_t>(value));
+}
+
+void Gfx::setShaderUniformIntValue(ShaderType shaderProgram, const std::string& name, int32_t value)
+{
+    glUniform1i(glGetUniformLocation(shaderProgram, name.c_str()), value);
+}
+
+void Gfx::setShaderUniformIntValue(ShaderType shaderProgram, const std::string& name, float value)
+{
+    glUniform1f(glGetUniformLocation(shaderProgram, name.c_str()), value);
+}
+
 void Gfx::destroyShader(Gfx::ShaderType shader)
 {
     glDeleteShader(shader);
