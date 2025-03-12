@@ -3,6 +3,9 @@
 #include "fmt/format.h"
 #include "RuntimeException.hpp"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
@@ -47,6 +50,49 @@ Gfx::VertexBufferObjectType Gfx::Mesh::vertexBufferObject() const
 Gfx::VertexArrayObjectType Gfx::Mesh::vertexArrayObject() const
 {
     return m_vertexArrayObject;
+}
+
+Gfx::Texture::Texture(uint8_t* data, int32_t width, int32_t height) : m_textureId(Gfx::createTextureObject()), m_data(data), m_width(width), m_height(height)
+{
+}
+
+Gfx::Texture::~Texture()
+{
+    stbi_image_free(m_data);
+}
+
+Gfx::Texture Gfx::Texture::fromFile(const std::filesystem::path& path)
+{
+    KORELIB_VERIFY_THROW(std::filesystem::exists(path), korelib::RuntimeException, fmt::format("File '{}' does not exist!", path.string()));
+
+    int32_t width {};
+    int32_t height {};
+    int32_t channels {};
+
+    uint8_t* data = stbi_load(path.string().c_str(), &width, &height, &channels, 0);
+    KORELIB_VERIFY_THROW(data != nullptr, korelib::RuntimeException, fmt::format("Failed to load image: {}", path.string()));
+
+    return { data, width,  height};
+}
+
+Gfx::TextureIdType Gfx::Texture::textureId() const
+{
+    return m_textureId;
+}
+
+const uint8_t* const Gfx::Texture::data() const
+{
+    return m_data;
+}
+
+int32_t Gfx::Texture::width() const
+{
+    return m_width;
+}
+
+int32_t Gfx::Texture::height() const
+{
+    return m_height;
 }
 
 void Gfx::initialize(uint32_t width, uint32_t height, const std::string& title, WindowFlags flags)
@@ -186,6 +232,11 @@ void Gfx::setShaderUniformIntValue(ShaderType shaderProgram, const std::string& 
     glUniform1f(glGetUniformLocation(shaderProgram, name.c_str()), value);
 }
 
+void Gfx::setShaderProgram(Gfx::ShaderType program)
+{
+    glUseProgram(program);
+}
+
 void Gfx::destroyShader(Gfx::ShaderType shader)
 {
     glDeleteShader(shader);
@@ -229,13 +280,31 @@ void Gfx::drawIndexedGeometry(const std::vector<Vertex>& vertices, const std::ve
         glVertexAttribPointer(attributePointer.index, attributePointer.numComponents, attributeType, attributePointer.aligned, attributePointer.stride, (void*)attributePointer.offset);
         glEnableVertexAttribArray(attributePointer.index);
     }
-    glUseProgram(Gfx::defaultShaderProgram());
     glDrawElements(GL_TRIANGLES, indicies.size(), GL_UNSIGNED_INT, indicies.data());
+}
+
+Gfx::TextureIdType Gfx::createTextureObject()
+{
+    Gfx::TextureIdType texture{};
+    glGenTextures(1, &texture);
+
+    return texture;
+}
+
+void Gfx::bindTexture(const Texture& texture)
+{
+    glBindTexture(GL_TEXTURE_2D, texture.textureId());
+}
+
+void Gfx::updateTextureData(const Texture& texture)
+{
+    bindTexture(texture);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture.width(), texture.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, texture.data());
 }
 
 void Gfx::endFrame()
 {
-    swap();
     glfwPollEvents();
 }
 

@@ -33,3 +33,7 @@ target_link_libraries(learnopengl PUBLIC
 target_include_directories(learnopengl PUBLIC 
     ${stb_SOURCE_DIR}
 )
+
+add_custom_command(TARGET learnopengl POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                       ${CMAKE_SOURCE_DIR}/Resources ${CMAKE_BINARY_DIR}/Resources)
