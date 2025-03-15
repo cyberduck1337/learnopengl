@@ -91,10 +91,17 @@ int main(int argc, char** argv)
             cam.position() += glm::normalize(glm::cross(cam.front(), cam.up())) * cameraSpeed;
         }
 
-        Gfx::clearBackground();
+        if (Input::GetKeyDown(GLFW_KEY_SPACE))
+        {
+            cam.position() += cameraSpeed * cam.up();
+        }
+
+        if (Input::GetKeyDown(GLFW_KEY_LEFT_CONTROL))
+        {
+            cam.position() -= cameraSpeed * cam.up();
+        }
 
         Gfx::setShaderProgram(Gfx::defaultShaderProgram());
-
         cam.update();
 
         Gfx::setShaderMat4x4Value(Gfx::defaultShaderProgram(), "view", cam.view());
