@@ -5,17 +5,24 @@
 #include "fmt/format.h"
 #include "Korelib.hpp"
 #include "Gfx.hpp"
-#include "glm/glm.hpp"
 
 #include <cstddef>
 #include <vector>
-
 
 int main(int argc, char** argv)
 {
     Gfx::initialize(800, 600, "Learn OpenGL", Gfx::WindowFlags::NONE);
 
-    static const Gfx::Mesh mesh{
+    Gfx::Texture texture = Gfx::Texture::fromFile("Resources/Textures/brick.jpg");
+    Gfx::Camera cam{45, 0.1f, 100};
+    cam.unwrap(800, 600);
+
+    Gfx::onWindowSizeChangedDelegate().bind([&cam](uint32_t w, uint32_t h)
+    {
+        cam.unwrap(w, h);
+    });
+
+    static Gfx::Mesh mesh{
         // vertex array [position, uv, color]
         {
             {{0.5f,  0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},  // top right
@@ -58,17 +65,43 @@ int main(int argc, char** argv)
         }
     };
 
-    Gfx::Texture texture = Gfx::Texture::fromFile("Resources/Textures/brick.jpg");
-
     Gfx::setClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     while (!Gfx::windowShouldClose())
     {
         Gfx::beginFrame();
+
+        static float cameraSpeed = 0.05f * Gfx::deltaTime();
+        if (Input::GetKeyDown(GLFW_KEY_W))
+        {
+            cam.position() += cameraSpeed * cam.front();
+        }
+
+        if (Input::GetKeyDown(GLFW_KEY_S))
+        {
+            cam.position() -= cameraSpeed * cam.front();
+        }
+
+        if (Input::GetKeyDown(GLFW_KEY_A))
+        {
+            cam.position() -= glm::normalize(glm::cross(cam.front(), cam.up())) * cameraSpeed;
+        }
+
+        if (Input::GetKeyDown(GLFW_KEY_D))
+        {
+            cam.position() += glm::normalize(glm::cross(cam.front(), cam.up())) * cameraSpeed;
+        }
+
         Gfx::clearBackground();
 
         Gfx::setShaderProgram(Gfx::defaultShaderProgram());
+
+        cam.update();
+
+        Gfx::setShaderMat4x4Value(Gfx::defaultShaderProgram(), "view", cam.view());
+        Gfx::setShaderMat4x4Value(Gfx::defaultShaderProgram(), "projection", cam.projection());
+
         Gfx::updateTextureData(texture);
-        Gfx::drawIndexedGeometry(mesh.vertices(), mesh.indicies(), Gfx::defaultShaderProgram(), mesh.vertexBufferObject(), mesh.vertexArrayObject(), attributes);
+        Gfx::drawIndexedGeometry(mesh.model(), mesh.vertices(), mesh.indicies(), Gfx::defaultShaderProgram(), mesh.vertexBufferObject(), mesh.vertexArrayObject(), attributes);
 
         Gfx::swap();
         Gfx::endFrame();

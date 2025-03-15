@@ -7,10 +7,18 @@
 #include <string>
 
 #include "Korelib.hpp"
+
 #include "glm/glm.hpp"
+#include "glm/gtx/matrix_decompose.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#include "glm/gtc/quaternion.hpp"
+#include "glm/gtx/quaternion.hpp"
 
 class Gfx final : public korelib::StaticOnlyClass
 {
+    friend class Input;
+
 public:
     static constexpr auto DEFAULT_VERTEX_SHADER = R"(
         #version 460 core
@@ -19,12 +27,16 @@ public:
         layout (location = 1) in vec3 inColor;
         layout (location = 2) in vec2 inUV;
 
+        uniform mat4 model;
+        uniform mat4 view;
+        uniform mat4 projection;
+
         out vec3 vertexColor;
         out vec2 uv;
 
         void main()
         {
-            gl_Position = vec4(inPos, 1.0);
+            gl_Position = projection * view * model * vec4(inPos, 1.0);
             vertexColor = inColor;
             uv = inUV;
         }
@@ -67,6 +79,14 @@ public:
     using ShaderType = uint32_t;
     using TextureIdType = uint32_t;
 
+    struct Transform
+    {
+        glm::vec3 position;
+        glm::quat rotation;
+        glm::vec3 scale;
+    };
+    
+
     class Mesh
     {
     public:
@@ -78,11 +98,17 @@ public:
         VertexBufferObjectType vertexBufferObject() const;
         VertexArrayObjectType vertexArrayObject() const;
 
+        Transform& transform();
+        glm::mat4& model();
+
     private:
         std::vector<Vertex> m_vertices;
         std::vector<uint32_t> m_indicies;
         VertexBufferObjectType m_vertexBufferObject;
         VertexArrayObjectType m_vertexArrayObject;
+
+        glm::mat4 m_model;
+        Transform m_transform;
     };
 
     enum class ShaderKind : uint8_t
@@ -133,9 +159,59 @@ public:
         int32_t m_height;
     };
 
+
+    class Camera
+    {
+        static constexpr glm::vec3 VECTOR_UP = { 0.0f, 1.0f, 0.0f };
+        static constexpr glm::vec3 VECTOR_FRONT = { 0.0f, 0.0f, -1.0f };
+
+    public:
+        Camera(float fov, float near, float far);
+        void unwrap(uint32_t width, uint32_t height);
+
+        void update();
+
+        float& fov();
+        float& near();
+        float& far();
+
+        float& pitch();
+        float& yaw();
+        float& roll();
+
+        glm::vec3& position();
+        glm::vec3& target();
+
+        const glm::vec3& up() const;
+        const glm::vec3& front() const;
+
+        glm::mat4& view();
+        glm::mat4& projection();
+
+    private:
+        float m_fov;
+        float m_near;
+        float m_far;
+
+        float m_pitch {};
+        float m_yaw {-90.0f};
+        float m_roll {};
+
+        glm::vec3 m_position {};
+        glm::vec3 m_target {};
+        glm::vec3 m_front {};
+        glm::vec3 m_direction {};
+        glm::vec3 m_right {};
+        glm::vec3 m_up {};
+
+        glm::mat4 m_view;
+        glm::mat4 m_projection;
+    };
+
 public:
     static void initialize(uint32_t width, uint32_t height, const std::string& title, WindowFlags flags);
     static void beginFrame();
+    static float deltaTime();
     static bool windowShouldClose();
     static void setClearColor(float r, float g, float b, float a);
     static void clearBackground();
@@ -147,9 +223,10 @@ public:
     static void setShaderUniformBoolValue(ShaderType shaderProgram, const std::string& name, bool value);
     static void setShaderUniformIntValue(ShaderType shaderProgram, const std::string& name, int32_t value);
     static void setShaderUniformIntValue(ShaderType shaderProgram, const std::string& name, float value);
+    static void setShaderMat4x4Value(ShaderType shaderProgram, const std::string& name, const glm::mat4& value);
     static void setShaderProgram(ShaderType program);
     static void destroyShader(ShaderType shader);
-    static void drawIndexedGeometry(const std::vector<Vertex>& vertecies, const std::vector<uint32_t>& indicies, ShaderType shaderProgram, VertexBufferObjectType vertexBufferObject, VertexArrayObjectType vertexArrayObject, const std::vector<Attribute>& attributesDataOffsets);
+    static void drawIndexedGeometry(const glm::mat4& model, const std::vector<Vertex>& vertecies, const std::vector<uint32_t>& indicies, ShaderType shaderProgram, VertexBufferObjectType vertexBufferObject, VertexArrayObjectType vertexArrayObject, const std::vector<Attribute>& attributesDataOffsets);
     static TextureIdType createTextureObject();
     static void bindTexture(const Texture& texture);
     static void updateTextureData(const Texture& texture);
@@ -170,4 +247,21 @@ private:
     static inline WindowType g_window { nullptr };
     static inline WindowReizeDelegate g_onWindowSizeChanged {};
     static inline ShaderType g_defaultShader {};
+    static inline float g_deltaTime {};
+    static inline float g_lastFrameTime{};
+};
+
+
+class Input : public korelib::StaticOnlyClass
+{
+public:
+    static bool GetKeyDown(uint32_t keyCode);
+    static glm::vec2 GetMousePosition();
+    static glm::vec2 GetMousePositionDelta();
+
+private:
+    static void Update();
+
+private:
+    static inline glm::vec2 g_lastFrameMousePosition {};
 };

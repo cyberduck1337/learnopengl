@@ -34,6 +34,10 @@ target_include_directories(learnopengl PUBLIC
     ${stb_SOURCE_DIR}
 )
 
+target_compile_definitions(learnopengl PUBLIC
+    GLM_ENABLE_EXPERIMENTAL
+)
+
 add_custom_command(TARGET learnopengl POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory
-                       ${CMAKE_SOURCE_DIR}/Resources ${CMAKE_BINARY_DIR}/Resources)
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Resources ${CMAKE_BINARY_DIR}/Resources
+)

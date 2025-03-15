@@ -24,11 +24,11 @@ void glfwWindowResizeCallback(GLFWwindow* window, int width, int height)
     }
 }
 
-Gfx::Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indicies) : m_vertices(vertices), m_indicies(indicies), m_vertexBufferObject(createVertexBufferObject()), m_vertexArrayObject(createVertexArrayObject())
+Gfx::Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indicies) : m_vertices(vertices), m_indicies(indicies), m_vertexBufferObject(createVertexBufferObject()), m_vertexArrayObject(createVertexArrayObject()), m_model(1.0f)
 {
 }
 
-Gfx::Mesh::Mesh(std::vector<Vertex>&& vertices, const std::vector<uint32_t>&& indicies) : m_vertices(std::move(vertices)), m_indicies(std::move(indicies)), m_vertexBufferObject(createVertexBufferObject()), m_vertexArrayObject(createVertexArrayObject())
+Gfx::Mesh::Mesh(std::vector<Vertex>&& vertices, const std::vector<uint32_t>&& indicies) : m_vertices(std::move(vertices)), m_indicies(std::move(indicies)), m_vertexBufferObject(createVertexBufferObject()), m_vertexArrayObject(createVertexArrayObject()), m_model(1.0f)
 {
 }
 
@@ -50,6 +50,20 @@ Gfx::VertexBufferObjectType Gfx::Mesh::vertexBufferObject() const
 Gfx::VertexArrayObjectType Gfx::Mesh::vertexArrayObject() const
 {
     return m_vertexArrayObject;
+}
+
+Gfx::Transform& Gfx::Mesh::transform()
+{
+    [[maybe_unused]] glm::vec3 skew;
+    [[maybe_unused]] glm::vec4 perspective;
+
+    glm::decompose(m_model, m_transform.scale, m_transform.rotation, m_transform.position, skew, perspective);
+    return m_transform;
+}
+
+glm::mat4& Gfx::Mesh::model()
+{
+    return m_model;
 }
 
 Gfx::Texture::Texture(uint8_t* data, int32_t width, int32_t height) : m_textureId(Gfx::createTextureObject()), m_data(data), m_width(width), m_height(height)
@@ -95,6 +109,88 @@ int32_t Gfx::Texture::height() const
     return m_height;
 }
 
+Gfx::Camera::Camera(float fov, float near, float far) : m_fov(fov), m_near(near), m_far(far)
+{
+}
+
+void Gfx::Camera::unwrap(uint32_t width, uint32_t height)
+{
+    m_projection = glm::perspective(glm::radians(m_fov), static_cast<float>(width) / static_cast<float>(height), m_near, m_far);
+}
+
+void Gfx::Camera::update()
+{
+    m_direction.x = glm::cos(glm::radians(m_yaw)) * glm::cos(glm::radians(m_pitch));
+    m_direction.y = glm::sin(glm::radians(m_pitch));
+    m_direction.z = glm::sin(glm::radians(m_yaw)) * glm::cos(glm::radians(m_pitch));
+
+    m_right = glm::normalize(glm::cross(VECTOR_UP, m_direction));
+    m_up = glm::cross(m_direction, m_right);
+    m_view = glm::lookAt(m_position, m_position + VECTOR_FRONT, m_up);
+    
+    m_front = glm::normalize(m_direction);
+}
+
+float& Gfx::Camera::fov()
+{
+    return m_fov;
+}
+
+float& Gfx::Camera::near()
+{
+    return m_near;
+}
+
+float& Gfx::Camera::far()
+{
+    return m_far;
+}
+
+float& Gfx::Camera::pitch()
+{
+    return m_pitch;
+}
+
+float& Gfx::Camera::yaw()
+{
+    return m_yaw;
+}
+
+float& Gfx::Camera::roll()
+{
+    return m_roll;
+}
+
+glm::vec3& Gfx::Camera::position()
+{
+    return m_position;
+}
+
+glm::vec3& Gfx::Camera::target()
+{
+    return m_target;
+}
+
+const glm::vec3& Gfx::Camera::up() const
+{
+    return m_up;
+}
+
+const glm::vec3& Gfx::Camera::front() const
+{
+    return m_front;
+}
+
+glm::mat4& Gfx::Camera::view()
+{
+    return m_view;
+}
+
+glm::mat4& Gfx::Camera::projection()
+{
+    return m_projection;
+}
+
 void Gfx::initialize(uint32_t width, uint32_t height, const std::string& title, WindowFlags flags)
 {
     KORELIB_VERIFY_THROW(glfwInit() == GLFW_TRUE, korelib::RuntimeException, "Failed to initialize glfw");
@@ -126,6 +222,16 @@ void Gfx::initialize(uint32_t width, uint32_t height, const std::string& title, 
 
 void Gfx::beginFrame()
 {
+    float currentTime = glfwGetTime();
+    g_deltaTime = currentTime - g_lastFrameTime;
+    g_lastFrameTime = currentTime;
+
+    glEnable(GL_DEPTH_TEST);
+}
+
+float Gfx::deltaTime()
+{
+    return g_deltaTime;
 }
 
 bool Gfx::windowShouldClose()
@@ -140,7 +246,7 @@ void Gfx::setClearColor(float r, float g, float b, float a)
 
 void Gfx::clearBackground()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);;
 }
 
 void Gfx::swap()
@@ -232,6 +338,11 @@ void Gfx::setShaderUniformIntValue(ShaderType shaderProgram, const std::string& 
     glUniform1f(glGetUniformLocation(shaderProgram, name.c_str()), value);
 }
 
+void Gfx::setShaderMat4x4Value(ShaderType shaderProgram, const std::string& name, const glm::mat4& value)
+{
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
+}
+
 void Gfx::setShaderProgram(Gfx::ShaderType program)
 {
     glUseProgram(program);
@@ -242,8 +353,10 @@ void Gfx::destroyShader(Gfx::ShaderType shader)
     glDeleteShader(shader);
 }
 
-void Gfx::drawIndexedGeometry(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indicies, ShaderType shaderProgram, VertexBufferObjectType vertexBufferObject, VertexArrayObjectType vertexArrayObject, const std::vector<Attribute>& attributesDataOffsets)
+void Gfx::drawIndexedGeometry(const glm::mat4& model, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indicies, ShaderType shaderProgram, VertexBufferObjectType vertexBufferObject, VertexArrayObjectType vertexArrayObject, const std::vector<Attribute>& attributesDataOffsets)
 {
+    Gfx::setShaderMat4x4Value(Gfx::defaultShaderProgram(), "model", model);
+
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject); // 0. select VertexBufferObject to work with
     glBufferData(GL_ARRAY_BUFFER, sizeof(std::vector<Vertex>::value_type) * vertices.size(), vertices.data(), GL_STATIC_DRAW); // 1. copy vertex data to the video card
     glBindVertexArray(vertexArrayObject); // 2. select VertexArrayObject to work with
@@ -312,4 +425,29 @@ void Gfx::destroy()
 {
     glfwDestroyWindow(g_window);
     glfwTerminate();
+}
+
+bool Input::GetKeyDown(uint32_t keyCode)
+{
+    return glfwGetKey(Gfx::g_window, keyCode) == GLFW_PRESS;
+}
+
+glm::vec2 Input::GetMousePosition()
+{
+    double x; 
+    double y;
+
+    glfwGetCursorPos(Gfx::g_window, &x, &y);
+
+    return { static_cast<float>(x), static_cast<float>(y)};
+}
+
+glm::vec2 Input::GetMousePositionDelta()
+{
+    return GetMousePosition() - g_lastFrameMousePosition;
+}
+
+void Input::Update()
+{
+    g_lastFrameMousePosition = GetMousePosition();
 }
