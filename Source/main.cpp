@@ -65,6 +65,9 @@ int main(int argc, char** argv)
         }
     };
 
+    float lastX {};
+    float lastY {};
+
     Gfx::setClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     while (!Gfx::windowShouldClose())
     {
@@ -110,7 +113,19 @@ int main(int argc, char** argv)
         Gfx::updateTextureData(texture);
         Gfx::drawIndexedGeometry(mesh.model(), mesh.vertices(), mesh.indicies(), Gfx::defaultShaderProgram(), mesh.vertexBufferObject(), mesh.vertexArrayObject(), attributes);
 
-        Gfx::swap();
+        glm::vec2 mousePos = Input::GetMousePosition();
+
+        float xoffset = mousePos.x - lastX;
+        float yoffset = lastY - mousePos.y;
+        
+        lastX = mousePos.x;
+        lastY = mousePos.y;
+
+        cam.yaw() += xoffset * 0.1f;
+        cam.pitch() += yoffset * 0.1f;
+
+        cam.pitch() = glm::clamp(cam.pitch(), -89.0f, 89.0f);
+
         Gfx::endFrame();
     }
     
