@@ -15,6 +15,8 @@
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtx/quaternion.hpp"
 
+#include "imgui.h"
+
 class Gfx final : public korelib::StaticOnlyClass
 {
     friend class Input;
@@ -180,13 +182,12 @@ public:
         float& roll();
 
         glm::vec3& position();
-        glm::vec3& target();
 
         const glm::vec3& up() const;
         const glm::vec3& front() const;
 
-        glm::mat4& view();
-        glm::mat4& projection();
+        const glm::mat4& view() const;
+        const glm::mat4& projection() const;
 
     private:
         float m_fov;
@@ -194,13 +195,11 @@ public:
         float m_far;
 
         float m_pitch {};
-        float m_yaw {-90.0f};
+        float m_yaw { -90.0f };
         float m_roll {};
 
         glm::vec3 m_position {};
-        glm::vec3 m_target {};
         glm::vec3 m_front {};
-        glm::vec3 m_direction {};
         glm::vec3 m_right {};
         glm::vec3 m_up {};
 
@@ -257,11 +256,4 @@ class Input : public korelib::StaticOnlyClass
 public:
     static bool GetKeyDown(uint32_t keyCode);
     static glm::vec2 GetMousePosition();
-    static glm::vec2 GetMousePositionDelta();
-
-private:
-    static void Update();
-
-private:
-    static inline glm::vec2 g_lastFrameMousePosition {};
 };

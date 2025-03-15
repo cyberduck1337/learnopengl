@@ -9,6 +9,9 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
+
 void glfwErrorCallback(int errorCode, const char* errorMessage)
 {
     throw korelib::RuntimeException(fmt::format("[glfw] error: Message:\"{}\". ErrorCode:{}", errorMessage, errorCode));
@@ -120,15 +123,17 @@ void Gfx::Camera::unwrap(uint32_t width, uint32_t height)
 
 void Gfx::Camera::update()
 {
-    m_direction.x = glm::cos(glm::radians(m_yaw)) * glm::cos(glm::radians(m_pitch));
-    m_direction.y = glm::sin(glm::radians(m_pitch));
-    m_direction.z = glm::sin(glm::radians(m_yaw)) * glm::cos(glm::radians(m_pitch));
+    glm::vec3 direction {
+        glm::cos(glm::radians(m_yaw)) * glm::cos(glm::radians(m_pitch)),
+        glm::sin(glm::radians(m_pitch)),
+        glm::sin(glm::radians(m_yaw)) * glm::cos(glm::radians(m_pitch))
+    };
 
-    m_right = glm::normalize(glm::cross(VECTOR_UP, m_direction));
-    m_up = glm::cross(m_direction, m_right);
-    m_view = glm::lookAt(m_position, m_position + VECTOR_FRONT, m_up);
-    
-    m_front = glm::normalize(m_direction);
+    m_front = glm::normalize(std::move(direction));
+
+    m_right = glm::normalize(glm::cross(m_front, VECTOR_UP));
+    m_up = glm::normalize(glm::cross(m_right, m_front));
+    m_view = glm::lookAt(m_position, m_position + m_front, m_up);
 }
 
 float& Gfx::Camera::fov()
@@ -166,11 +171,6 @@ glm::vec3& Gfx::Camera::position()
     return m_position;
 }
 
-glm::vec3& Gfx::Camera::target()
-{
-    return m_target;
-}
-
 const glm::vec3& Gfx::Camera::up() const
 {
     return m_up;
@@ -181,12 +181,12 @@ const glm::vec3& Gfx::Camera::front() const
     return m_front;
 }
 
-glm::mat4& Gfx::Camera::view()
+const glm::mat4& Gfx::Camera::view() const
 {
     return m_view;
 }
 
-glm::mat4& Gfx::Camera::projection()
+const glm::mat4& Gfx::Camera::projection() const
 {
     return m_projection;
 }
@@ -205,6 +205,17 @@ void Gfx::initialize(uint32_t width, uint32_t height, const std::string& title, 
     KORELIB_VERIFY_THROW(g_window != nullptr, korelib::RuntimeException, "[glfw] error: failed to initialize window");
 
     glfwMakeContextCurrent(g_window);
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io{ ImGui::GetIO() };
+
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+    ImGui_ImplGlfw_InitForOpenGL(g_window, true);
+    ImGui_ImplOpenGL3_Init("#version 460");
 
     KORELIB_VERIFY_THROW(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), korelib::RuntimeException, "Failed to initialize glad");
 
@@ -225,6 +236,12 @@ void Gfx::beginFrame()
     float currentTime = glfwGetTime();
     g_deltaTime = currentTime - g_lastFrameTime;
     g_lastFrameTime = currentTime;
+
+    clearBackground();
+
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
 
     glEnable(GL_DEPTH_TEST);
 }
@@ -419,10 +436,27 @@ void Gfx::updateTextureData(const Texture& texture)
 void Gfx::endFrame()
 {
     glfwPollEvents();
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+        GLFWwindow* backup_current_context = glfwGetCurrentContext();
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+        glfwMakeContextCurrent(backup_current_context);
+    }
+
+    swap();
 }
 
 void Gfx::destroy()
 {
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
     glfwDestroyWindow(g_window);
     glfwTerminate();
 }
@@ -440,14 +474,4 @@ glm::vec2 Input::GetMousePosition()
     glfwGetCursorPos(Gfx::g_window, &x, &y);
 
     return { static_cast<float>(x), static_cast<float>(y)};
-}
-
-glm::vec2 Input::GetMousePositionDelta()
-{
-    return GetMousePosition() - g_lastFrameMousePosition;
-}
-
-void Input::Update()
-{
-    g_lastFrameMousePosition = GetMousePosition();
 }
