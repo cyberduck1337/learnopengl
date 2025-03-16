@@ -11,11 +11,14 @@
 
 int main(int argc, char** argv)
 {
-    Gfx::initialize(800, 600, "Learn OpenGL", Gfx::WindowFlags::NONE);
+    static constexpr uint32_t INITIAL_WINDOW_WIDTH = 800;
+    static constexpr uint32_t INITIAL_WINDOW_HEIGHT = 600;
+
+    Gfx::initialize(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, "Learn OpenGL", Gfx::WindowFlags::NONE);
 
     Gfx::Texture texture = Gfx::Texture::fromFile("Resources/Textures/brick.jpg");
     Gfx::Camera cam{45, 0.1f, 100};
-    cam.unwrap(800, 600);
+    cam.unwrap(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
 
     Gfx::onWindowSizeChangedDelegate().bind([&cam](uint32_t w, uint32_t h)
     {
@@ -65,8 +68,9 @@ int main(int argc, char** argv)
         }
     };
 
-    float lastX {};
-    float lastY {};
+    glm::vec2 mousePosition {};
+    glm::vec2 lastMousePosition {};
+    float mouseSensetivity {0.1f};
 
     Gfx::setClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     while (!Gfx::windowShouldClose())
@@ -113,22 +117,27 @@ int main(int argc, char** argv)
         Gfx::updateTextureData(texture);
         Gfx::drawIndexedGeometry(mesh.model(), mesh.vertices(), mesh.indicies(), Gfx::defaultShaderProgram(), mesh.vertexBufferObject(), mesh.vertexArrayObject(), attributes);
 
-        glm::vec2 mousePos = Input::GetMousePosition();
+        mousePosition = Input::GetMousePosition();
 
-        float xoffset = mousePos.x - lastX;
-        float yoffset = lastY - mousePos.y;
-        
-        lastX = mousePos.x;
-        lastY = mousePos.y;
+        float xoffset = (mousePosition.x - lastMousePosition.x) * mouseSensetivity;
+        float yoffset = (lastMousePosition.y - mousePosition.y) * mouseSensetivity;
 
-        cam.yaw() += xoffset * 0.1f;
-        cam.pitch() += yoffset * 0.1f;
+        lastMousePosition = mousePosition;
 
-        cam.pitch() = glm::clamp(cam.pitch(), -89.0f, 89.0f);
+        float& cameraYaw = cam.yaw();
+        float& camperaPitch = cam.pitch();
+
+        cameraYaw += xoffset;
+        camperaPitch += yoffset;
+        camperaPitch = glm::clamp(camperaPitch, -89.0f, 89.0f);
+
+        ImGui::Begin("Mouse");
+        ImGui::SliderFloat("Sensetivity", &mouseSensetivity, 0.0f, 1.0f);
+        ImGui::End();
 
         Gfx::endFrame();
     }
-    
+
     Gfx::destroy();
     return 0;
 }
