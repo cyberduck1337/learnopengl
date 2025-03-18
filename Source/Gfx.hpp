@@ -52,11 +52,11 @@ public:
         in vec3 vertexColor;
         in vec2 uv;
 
-        uniform sampler2D textureData;
+        uniform sampler2D u_texture;
 
         void main()
         {
-            FragColor = texture(textureData, uv) * vec4(vertexColor, 1.0);
+            FragColor = texture(u_texture, -uv);
         }
     )";
     
