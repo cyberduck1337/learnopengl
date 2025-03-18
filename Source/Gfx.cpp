@@ -40,6 +40,11 @@ const std::vector<Gfx::Vertex>& Gfx::Mesh::vertices() const
     return m_vertices;
 }
 
+std::vector<Gfx::Vertex>& Gfx::Mesh::vertices()
+{
+    return m_vertices;
+}
+
 const std::vector<uint32_t>& Gfx::Mesh::indicies() const
 {
     return m_indicies;

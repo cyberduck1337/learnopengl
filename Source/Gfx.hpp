@@ -96,12 +96,12 @@ public:
         Mesh(std::vector<Vertex>&& vertices, const std::vector<uint32_t>&& indicies);
 
         const std::vector<Vertex>& vertices() const;
+        std::vector<Vertex>& vertices();
         const std::vector<uint32_t>& indicies() const;
         VertexBufferObjectType vertexBufferObject() const;
         VertexArrayObjectType vertexArrayObject() const;
 
         Transform& transform();
-        glm::mat4& model();
 
     private:
         std::vector<Vertex> m_vertices;
