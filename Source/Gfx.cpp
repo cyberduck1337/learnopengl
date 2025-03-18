@@ -227,6 +227,9 @@ void Gfx::initialize(uint32_t width, uint32_t height, const std::string& title, 
     glViewport(0, 0, width, height);
     glfwSetFramebufferSizeCallback(g_window, glfwWindowResizeCallback);
 
+    glFrontFace(GL_CCW);
+    glEnable(GL_CULL_FACE);
+
     ShaderType defaultVertexShader = compileShader(DEFAULT_VERTEX_SHADER, ShaderKind::VERTEX);
     ShaderType defaultFragmentShader = compileShader(DEFAULT_FRAGMENT_SHADER, ShaderKind::FRAGMENT);
 
