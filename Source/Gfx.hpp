@@ -256,4 +256,5 @@ class Input : public korelib::StaticOnlyClass
 public:
     static bool GetKeyDown(uint32_t keyCode);
     static glm::vec2 GetMousePosition();
+    static bool GetMouseButtonDown(uint32_t keyCode);
 };

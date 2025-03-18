@@ -475,3 +475,8 @@ glm::vec2 Input::GetMousePosition()
 
     return { static_cast<float>(x), static_cast<float>(y)};
 }
+
+bool Input::GetMouseButtonDown(uint32_t keyCode)
+{
+    return glfwGetMouseButton(Gfx::g_window, keyCode) == GLFW_PRESS;
+}
