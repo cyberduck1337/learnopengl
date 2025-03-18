@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 
     Gfx::initialize(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, "Learn OpenGL", Gfx::WindowFlags::NONE);
 
-    Gfx::Texture texture = Gfx::Texture::fromFile("Resources/Textures/brick.jpg");
+    Gfx::Texture texture = Gfx::Texture::fromFile("Resources/Textures/Diamond_Ore.jpg");
     Gfx::Camera cam{45, 0.1f, 100};
     cam.unwrap(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
 
