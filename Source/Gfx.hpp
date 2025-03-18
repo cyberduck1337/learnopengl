@@ -14,6 +14,7 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtx/quaternion.hpp"
+#include "glm/gtx/euler_angles.hpp"
 
 #include "imgui.h"
 
@@ -109,7 +110,6 @@ public:
         VertexBufferObjectType m_vertexBufferObject;
         VertexArrayObjectType m_vertexArrayObject;
 
-        glm::mat4 m_model;
         Transform m_transform;
     };
 
@@ -225,7 +225,7 @@ public:
     static void setShaderMat4x4Value(ShaderType shaderProgram, const std::string& name, const glm::mat4& value);
     static void setShaderProgram(ShaderType program);
     static void destroyShader(ShaderType shader);
-    static void drawIndexedGeometry(const glm::mat4& model, const std::vector<Vertex>& vertecies, const std::vector<uint32_t>& indicies, ShaderType shaderProgram, VertexBufferObjectType vertexBufferObject, VertexArrayObjectType vertexArrayObject, const std::vector<Attribute>& attributesDataOffsets);
+    static void drawIndexedGeometry(const Transform& transform, const std::vector<Vertex>& vertecies, const std::vector<uint32_t>& indicies, ShaderType shaderProgram, VertexBufferObjectType vertexBufferObject, VertexArrayObjectType vertexArrayObject, const std::vector<Attribute>& attributesDataOffsets);
     static TextureIdType createTextureObject();
     static void bindTexture(const Texture& texture);
     static void updateTextureData(const Texture& texture);

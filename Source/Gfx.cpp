@@ -27,11 +27,11 @@ void glfwWindowResizeCallback(GLFWwindow* window, int width, int height)
     }
 }
 
-Gfx::Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indicies) : m_vertices(vertices), m_indicies(indicies), m_vertexBufferObject(createVertexBufferObject()), m_vertexArrayObject(createVertexArrayObject()), m_model(1.0f)
+Gfx::Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indicies) : m_vertices(vertices), m_indicies(indicies), m_vertexBufferObject(createVertexBufferObject()), m_vertexArrayObject(createVertexArrayObject())
 {
 }
 
-Gfx::Mesh::Mesh(std::vector<Vertex>&& vertices, const std::vector<uint32_t>&& indicies) : m_vertices(std::move(vertices)), m_indicies(std::move(indicies)), m_vertexBufferObject(createVertexBufferObject()), m_vertexArrayObject(createVertexArrayObject()), m_model(1.0f)
+Gfx::Mesh::Mesh(std::vector<Vertex>&& vertices, const std::vector<uint32_t>&& indicies) : m_vertices(std::move(vertices)), m_indicies(std::move(indicies)), m_vertexBufferObject(createVertexBufferObject()), m_vertexArrayObject(createVertexArrayObject())
 {
 }
 
@@ -369,9 +369,14 @@ void Gfx::destroyShader(Gfx::ShaderType shader)
     glDeleteShader(shader);
 }
 
-void Gfx::drawIndexedGeometry(const glm::mat4& model, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indicies, ShaderType shaderProgram, VertexBufferObjectType vertexBufferObject, VertexArrayObjectType vertexArrayObject, const std::vector<Attribute>& attributesDataOffsets)
+void Gfx::drawIndexedGeometry(const Gfx::Transform& transform, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indicies, ShaderType shaderProgram, VertexBufferObjectType vertexBufferObject, VertexArrayObjectType vertexArrayObject, const std::vector<Attribute>& attributesDataOffsets)
 {
-    Gfx::setShaderMat4x4Value(Gfx::defaultShaderProgram(), "model", model);
+    const glm::mat4 translation = glm::translate(transform.position);
+    const glm::mat4 rotation = glm::toMat4(transform.rotation);
+    const glm::mat4 scale = glm::scale(transform.scale);
+
+    glm::mat4 model = translation * rotation * scale;
+    Gfx::setShaderMat4x4Value(Gfx::defaultShaderProgram(), "model", std::move(model));
 
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject); // 0. select VertexBufferObject to work with
     glBufferData(GL_ARRAY_BUFFER, sizeof(std::vector<Vertex>::value_type) * vertices.size(), vertices.data(), GL_STATIC_DRAW); // 1. copy vertex data to the video card
