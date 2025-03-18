@@ -62,16 +62,7 @@ Gfx::VertexArrayObjectType Gfx::Mesh::vertexArrayObject() const
 
 Gfx::Transform& Gfx::Mesh::transform()
 {
-    [[maybe_unused]] glm::vec3 skew;
-    [[maybe_unused]] glm::vec4 perspective;
-
-    glm::decompose(m_model, m_transform.scale, m_transform.rotation, m_transform.position, skew, perspective);
     return m_transform;
-}
-
-glm::mat4& Gfx::Mesh::model()
-{
-    return m_model;
 }
 
 Gfx::Texture::Texture(uint8_t* data, int32_t width, int32_t height) : m_textureId(Gfx::createTextureObject()), m_data(data), m_width(width), m_height(height)
