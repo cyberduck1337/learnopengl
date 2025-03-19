@@ -27,20 +27,17 @@ public:
         #version 460 core
 
         layout (location = 0) in vec3 inPos;
-        layout (location = 1) in vec3 inColor;
-        layout (location = 2) in vec2 inUV;
+        layout (location = 1) in vec2 inUV;
 
         uniform mat4 model;
         uniform mat4 view;
         uniform mat4 projection;
 
-        out vec3 vertexColor;
         out vec2 uv;
 
         void main()
         {
             gl_Position = projection * view * model * vec4(inPos, 1.0);
-            vertexColor = inColor;
             uv = inUV;
         }
     )";
@@ -50,7 +47,6 @@ public:
 
         out vec4 FragColor;
 
-        in vec3 vertexColor;
         in vec2 uv;
 
         uniform sampler2D u_texture;
@@ -70,7 +66,6 @@ public:
     struct Vertex
     {
         glm::vec3 position;
-        glm::vec3 color;
         glm::vec2 uv;
     };
 

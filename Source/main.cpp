@@ -30,30 +30,30 @@ int main(int argc, char** argv)
     static Gfx::Mesh mesh{
         // vertex array [position, color, uv]
         {
-        /*[ 0]*/ {{-0.5f, -0.5f,  0.5f},  {1.0f, 0.0f, 0.0f},     {0.0f, 1.0f / 3}},  // front  - bottom - left
-        /*[ 1]*/ {{-0.5f,  0.5f,  0.5f},  {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f / 3 * 2}},  // front  - top    - left
-        /*[ 2]*/ {{ 0.5f,  0.5f,  0.5f},  {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f / 3 * 2}},  // front  - top    - right
-        /*[ 3]*/ {{ 0.5f, -0.5f,  0.5f},  {1.0f, 1.0f, 0.0f},     {1.0f, 1.0f / 3}},  // front  - bottom - right
-        /*[ 4]*/ {{-0.5f, -0.5f, -0.5f},  {1.0f, 0.0f, 0.0f},     {0.0f, 1.0f / 3}},  // back   - bottom - left
-        /*[ 5]*/ {{-0.5f,  0.5f, -0.5f},  {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f / 3 * 2}},  // back   - top    - left
-        /*[ 6]*/ {{ 0.5f,  0.5f, -0.5f},  {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f / 3 * 2}},  // back   - top    - right
-        /*[ 7]*/ {{ 0.5f, -0.5f, -0.5f},  {0.0f, 1.0f, 0.0f},     {1.0f, 1.0f / 3}},  // back   - bottom - right
-        /*[ 8]*/ {{-0.5f, -0.5f, -0.5f},  {1.0f, 0.0f, 0.0f},     {0.0f, 1.0f / 3}},  // left   - bottom - back
-        /*[ 9]*/ {{-0.5f,  0.5f, -0.5f},  {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f / 3 * 2}},  // left   - top    - back
-        /*[10]*/ {{-0.5f,  0.5f,  0.5f},  {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f / 3 * 2}},  // left   - top    - front
-        /*[11]*/ {{-0.5f, -0.5f,  0.5f},  {1.0f, 1.0f, 0.0f},     {1.0f, 1.0f / 3}},  // left   - bottom - front
-        /*[12]*/ {{ 0.5f, -0.5f, -0.5f},  {1.0f, 0.0f, 0.0f},     {0.0f, 1.0f / 3}},  // right  - bottom - back
-        /*[13]*/ {{ 0.5f,  0.5f, -0.5f},  {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f / 3 * 2}},  // right  - top    - back
-        /*[14]*/ {{ 0.5f,  0.5f,  0.5f},  {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f / 3 * 2}},  // right  - top    - front
-        /*[15]*/ {{ 0.5f, -0.5f,  0.5f},  {1.0f, 1.0f, 0.0f},     {1.0f, 1.0f / 3}},  // right  - bottom - front
-        /*[16]*/ {{-0.5f,  0.5f,  0.5f},  {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f / 3 * 2}},  // top    - near   - left
-        /*[17]*/ {{-0.5f,  0.5f, -0.5f},  {0.0f, 1.0f, 0.0f},         {0.0f, 1.0f}},  // top    - far    - left
-        /*[18]*/ {{ 0.5f,  0.5f, -0.5f},  {0.0f, 0.0f, 1.0f},         {1.0f, 1.0f}},  // top    - far    - right
-        /*[19]*/ {{ 0.5f,  0.5f,  0.5f},  {1.0f, 1.0f, 0.0f}, {1.0f, 1.0f / 3 * 2}},  // top    - near   - right
-        /*[20]*/ {{-0.5f, -0.5f,  0.5f},  {1.0f, 0.0f, 0.0f},         {0.0f, 0.0f}},  // bottom - near   - left
-        /*[21]*/ {{-0.5f, -0.5f, -0.5f},  {0.0f, 1.0f, 0.0f},     {0.0f, 1.0f / 3}},  // bottom - far    - left
-        /*[22]*/ {{ 0.5f, -0.5f, -0.5f},  {0.0f, 0.0f, 1.0f},     {1.0f, 1.0f / 3}},  // bottom - far    - right
-        /*[23]*/ {{ 0.5f, -0.5f,  0.5f},  {1.0f, 1.0f, 0.0f},         {1.0f, 0.0f}},  // bottom - near   - right
+        /*[ 0]*/ {{-0.5f, -0.5f,  0.5f},     {0.0f, 1.0f / 3}},  // front  - bottom - left
+        /*[ 1]*/ {{-0.5f,  0.5f,  0.5f}, {0.0f, 1.0f / 3 * 2}},  // front  - top    - left
+        /*[ 2]*/ {{ 0.5f,  0.5f,  0.5f}, {1.0f, 1.0f / 3 * 2}},  // front  - top    - right
+        /*[ 3]*/ {{ 0.5f, -0.5f,  0.5f},     {1.0f, 1.0f / 3}},  // front  - bottom - right
+        /*[ 4]*/ {{-0.5f, -0.5f, -0.5f},     {0.0f, 1.0f / 3}},  // back   - bottom - left
+        /*[ 5]*/ {{-0.5f,  0.5f, -0.5f}, {0.0f, 1.0f / 3 * 2}},  // back   - top    - left
+        /*[ 6]*/ {{ 0.5f,  0.5f, -0.5f}, {1.0f, 1.0f / 3 * 2}},  // back   - top    - right
+        /*[ 7]*/ {{ 0.5f, -0.5f, -0.5f},     {1.0f, 1.0f / 3}},  // back   - bottom - right
+        /*[ 8]*/ {{-0.5f, -0.5f, -0.5f},     {0.0f, 1.0f / 3}},  // left   - bottom - back
+        /*[ 9]*/ {{-0.5f,  0.5f, -0.5f}, {0.0f, 1.0f / 3 * 2}},  // left   - top    - back
+        /*[10]*/ {{-0.5f,  0.5f,  0.5f}, {1.0f, 1.0f / 3 * 2}},  // left   - top    - front
+        /*[11]*/ {{-0.5f, -0.5f,  0.5f},     {1.0f, 1.0f / 3}},  // left   - bottom - front
+        /*[12]*/ {{ 0.5f, -0.5f, -0.5f},     {0.0f, 1.0f / 3}},  // right  - bottom - back
+        /*[13]*/ {{ 0.5f,  0.5f, -0.5f}, {0.0f, 1.0f / 3 * 2}},  // right  - top    - back
+        /*[14]*/ {{ 0.5f,  0.5f,  0.5f}, {1.0f, 1.0f / 3 * 2}},  // right  - top    - front
+        /*[15]*/ {{ 0.5f, -0.5f,  0.5f},     {1.0f, 1.0f / 3}},  // right  - bottom - front
+        /*[16]*/ {{-0.5f,  0.5f,  0.5f}, {0.0f, 1.0f / 3 * 2}},  // top    - near   - left
+        /*[17]*/ {{-0.5f,  0.5f, -0.5f},         {0.0f, 1.0f}},  // top    - far    - left
+        /*[18]*/ {{ 0.5f,  0.5f, -0.5f},         {1.0f, 1.0f}},  // top    - far    - right
+        /*[19]*/ {{ 0.5f,  0.5f,  0.5f}, {1.0f, 1.0f / 3 * 2}},  // top    - near   - right
+        /*[20]*/ {{-0.5f, -0.5f,  0.5f},         {0.0f, 0.0f}},  // bottom - near   - left
+        /*[21]*/ {{-0.5f, -0.5f, -0.5f},     {0.0f, 1.0f / 3}},  // bottom - far    - left
+        /*[22]*/ {{ 0.5f, -0.5f, -0.5f},     {1.0f, 1.0f / 3}},  // bottom - far    - right
+        /*[23]*/ {{ 0.5f, -0.5f,  0.5f},         {1.0f, 0.0f}},  // bottom - near   - right
         },
         // indicies array
         {
@@ -78,14 +78,6 @@ int main(int argc, char** argv)
         },
         {
             .index = 1,
-            .numComponents = 3,
-            .stride = sizeof(Gfx::Vertex),
-            .type = Gfx::Attribute::Type::FLOAT,
-            .offset = offsetof(Gfx::Vertex, color),
-            .aligned = false
-        },
-        {
-            .index = 2,
             .numComponents = 2,
             .stride = sizeof(Gfx::Vertex),
             .type = Gfx::Attribute::Type::FLOAT,
