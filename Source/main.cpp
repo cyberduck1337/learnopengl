@@ -27,7 +27,7 @@ int main(int argc, char** argv)
         cam.unwrap(w, h);
     });
 
-    static Gfx::Mesh mesh{
+    static Gfx::Mesh cube{
         // vertex array [position, color, uv]
         {
         /*[ 0]*/ {{-0.5f, -0.5f,  0.5f},     {0.0f, 1.0f / 3}},  // front  - bottom - left
@@ -86,7 +86,7 @@ int main(int argc, char** argv)
         }
     };
 
-    Gfx::Transform& meshTransform = mesh.transform();
+    Gfx::Transform& meshTransform = cube.transform();
     meshTransform.scale = {1.0f, 1.0f, 1.0f};
     glm::vec3 rotation = glm::degrees(glm::eulerAngles(meshTransform.rotation));
 
@@ -138,7 +138,7 @@ int main(int argc, char** argv)
         Gfx::setShaderMat4x4Value(Gfx::defaultShaderProgram(), "projection", cam.projection());
 
         Gfx::updateTextureData(texture);
-        Gfx::drawIndexedGeometry(mesh.transform(), mesh.vertices(), mesh.indicies(), Gfx::defaultShaderProgram(), mesh.vertexBufferObject(), mesh.vertexArrayObject(), attributes);
+        Gfx::drawIndexedGeometry(cube.transform(), cube.vertices(), cube.indicies(), Gfx::defaultShaderProgram(), cube.vertexBufferObject(), cube.vertexArrayObject(), attributes);
 
         rotation.y += 100 * Gfx::deltaTime();
         if (rotation.y >= 360.0f)
@@ -187,16 +187,6 @@ int main(int argc, char** argv)
         ImGui::InputFloat("Scale.x", &meshTransform.scale.x);
         ImGui::InputFloat("Scale.y", &meshTransform.scale.y);
         ImGui::InputFloat("Scale.z", &meshTransform.scale.z);
-        ImGui::End();
-
-        ImGui::Begin("UV");
-        size_t index {0};
-        for(Gfx::Vertex& vertex : mesh.vertices())
-        {
-            ImGui::SliderFloat(fmt::format("vert[{}].uv.x", index).c_str(), &vertex.uv.x, 0.0f, 1.0f);
-            ImGui::SliderFloat(fmt::format("vert[{}].uv.y", index).c_str(), &vertex.uv.y, 0.0f, 1.0f);
-            index++;
-        }
         ImGui::End();
 
         Gfx::endFrame();
