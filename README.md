@@ -3,3 +3,5 @@
 
 > [!WARNING]  
 > Not production ready. Please use at your own risk
+
+![preview](./Resources/preview.gif)
