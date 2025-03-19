@@ -207,6 +207,7 @@ public:
     static void beginFrame();
     static float deltaTime();
     static bool windowShouldClose();
+    static glm::uvec2 getWindowSize();
     static void setClearColor(float r, float g, float b, float a);
     static void clearBackground();
     static void swap();

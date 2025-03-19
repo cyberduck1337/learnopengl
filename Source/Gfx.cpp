@@ -255,6 +255,15 @@ bool Gfx::windowShouldClose()
     return glfwWindowShouldClose(g_window);
 }
 
+glm::uvec2 Gfx::getWindowSize()
+{
+    int w{};
+    int h{};
+    glfwGetWindowSize(Gfx::g_window, &w, &h);
+
+    return {static_cast<glm::uvec2::value_type>(w), static_cast<glm::uvec2::value_type>(h)};
+}
+
 void Gfx::setClearColor(float r, float g, float b, float a)
 {
     glClearColor(r, g, b, a);

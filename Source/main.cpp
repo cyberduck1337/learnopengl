@@ -21,6 +21,7 @@ int main(int argc, char** argv)
     Gfx::Texture texture = Gfx::Texture::fromFile("Resources/Textures/Grass_Block.jpg");
     Gfx::Camera cam{45, 0.1f, 100};
     cam.unwrap(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
+    cam.position() = {-0.3f, 0.3f, 2.0f};
 
     Gfx::onWindowSizeChangedDelegate().bind([&cam](uint32_t w, uint32_t h)
     {
@@ -28,7 +29,7 @@ int main(int argc, char** argv)
     });
 
     static Gfx::Mesh cube{
-        // vertex array [position, color, uv]
+        // vertex array [position, uv]
         {
         /*[ 0]*/ {{-0.5f, -0.5f,  0.5f},     {0.0f, 1.0f / 3}},  // front  - bottom - left
         /*[ 1]*/ {{-0.5f,  0.5f,  0.5f}, {0.0f, 1.0f / 3 * 2}},  // front  - top    - left
@@ -154,23 +155,40 @@ int main(int argc, char** argv)
 
         lastMousePosition = mousePosition;
 
-        float& cameraYaw = cam.yaw();
-        float& camperaPitch = cam.pitch();
-
         if (Input::GetMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT))
         {
+            float& cameraYaw = cam.yaw();
+            float& camperaPitch = cam.pitch();
+
             cameraYaw += xoffset;
             camperaPitch += yoffset;
             camperaPitch = glm::clamp(camperaPitch, -89.0f, 89.0f);
         }
 
-        float camPos[3] { cam.position().x, cam.position().y, cam.position().z};
-        ImGui::Begin("Camera");
-        if(ImGui::DragFloat3("Position", camPos, 0.1f, std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max()))
+        if (ImGui::Begin("Camera"))
         {
-            cam.position() = {camPos[0], camPos[1], camPos[2]};
+            float camPos[3] { cam.position().x, cam.position().y, cam.position().z};
+            if(ImGui::DragFloat3("Position", camPos, 0.1f, std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max()))
+            {
+                cam.position() = {camPos[0], camPos[1], camPos[2]};
+            }
+            if (ImGui::SliderFloat("near", &cam.near(), 0.0f, cam.far()))
+            {
+                const glm::uvec2 windowSize = Gfx::getWindowSize();
+                cam.unwrap(windowSize.x, windowSize.y);
+            }
+            if (ImGui::SliderFloat("far", &cam.far(), cam.near(), 1000))
+            {
+                const glm::uvec2 windowSize = Gfx::getWindowSize();
+                cam.unwrap(windowSize.x, windowSize.y);
+            }
+            if (ImGui::SliderFloat("fov", &cam.fov(), 0, 180))
+            {
+                const glm::uvec2 windowSize = Gfx::getWindowSize();
+                cam.unwrap(windowSize.x, windowSize.y);
+            }
+            ImGui::End();
         }
-        ImGui::End();
 
         ImGui::Begin("Mouse");
         ImGui::SliderFloat("Sensetivity", &mouseSensetivity, 0.0f, 1.0f);
