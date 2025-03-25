@@ -108,83 +108,35 @@ int32_t Gfx::Texture::height() const
     return m_height;
 }
 
-Gfx::Camera::Camera(float fov, float near, float far) : m_fov(fov), m_near(near), m_far(far)
+glm::vec3 Gfx::Transform::eulerAngles() const
 {
+    return glm::degrees(glm::eulerAngles(rotation));
 }
 
-void Gfx::Camera::unwrap(uint32_t width, uint32_t height)
+glm::vec3 Gfx::Transform::direction() const
 {
-    m_projection = glm::perspective(glm::radians(m_fov), static_cast<float>(width) / static_cast<float>(height), m_near, m_far);
-}
+    const glm::vec3 rot = eulerAngles();
 
-void Gfx::Camera::update()
-{
-    glm::vec3 direction {
-        glm::cos(glm::radians(m_yaw)) * glm::cos(glm::radians(m_pitch)),
-        glm::sin(glm::radians(m_pitch)),
-        glm::sin(glm::radians(m_yaw)) * glm::cos(glm::radians(m_pitch))
+    return {
+        glm::cos(glm::radians(rot.x)) * glm::cos(glm::radians(rot.y)),
+        glm::sin(glm::radians(rot.y)),
+        glm::sin(glm::radians(rot.x)) * glm::cos(glm::radians(rot.y))
     };
-
-    m_front = glm::normalize(std::move(direction));
-
-    m_right = glm::normalize(glm::cross(m_front, VECTOR_UP));
-    m_up = glm::normalize(glm::cross(m_right, m_front));
-    m_view = glm::lookAt(m_position, m_position + m_front, m_up);
 }
 
-float& Gfx::Camera::fov()
+glm::vec3 Gfx::Transform::front() const
 {
-    return m_fov;
+    return glm::normalize(direction());
 }
 
-float& Gfx::Camera::near()
+glm::vec3 Gfx::Transform::right() const
 {
-    return m_near;
+    return glm::normalize(glm::cross(front(), VECTOR_UP));
 }
 
-float& Gfx::Camera::far()
+glm::vec3 Gfx::Transform::up() const
 {
-    return m_far;
-}
-
-float& Gfx::Camera::pitch()
-{
-    return m_pitch;
-}
-
-float& Gfx::Camera::yaw()
-{
-    return m_yaw;
-}
-
-float& Gfx::Camera::roll()
-{
-    return m_roll;
-}
-
-glm::vec3& Gfx::Camera::position()
-{
-    return m_position;
-}
-
-const glm::vec3& Gfx::Camera::up() const
-{
-    return m_up;
-}
-
-const glm::vec3& Gfx::Camera::front() const
-{
-    return m_front;
-}
-
-const glm::mat4& Gfx::Camera::view() const
-{
-    return m_view;
-}
-
-const glm::mat4& Gfx::Camera::projection() const
-{
-    return m_projection;
+    return glm::normalize(glm::cross(right(), front()));
 }
 
 void Gfx::initialize(uint32_t width, uint32_t height, const std::string& title, WindowFlags flags)

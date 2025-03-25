@@ -6,10 +6,78 @@
 #include "Korelib.hpp"
 #include "Gfx.hpp"
 
+#include "Components/Camera.hpp"
+#include "SceneGraph.hpp"
+
 #include <cstddef>
 #include <vector>
 #include <thread>
 #include <limits>
+
+class FlyCameraController : public Component
+{
+public:
+    FlyCameraController(const std::shared_ptr<Entity>& parent) : Component("FlyCamera", parent), speed(1.0f), sensetivity(0.1f)
+    {
+    }
+
+    void update() override
+    {
+        Gfx::Transform& transform = std::static_pointer_cast<GameObject>(getParent())->m_transform;
+        const glm::vec2 mousePosition = Input::GetMousePosition();
+
+        if (Input::GetKeyDown(GLFW_KEY_W))
+        {
+            transform.position += speed * Gfx::deltaTime() * transform.front();
+        }
+
+        if (Input::GetKeyDown(GLFW_KEY_S))
+        {
+            transform.position -= speed * Gfx::deltaTime() * transform.front();
+        }
+
+        if (Input::GetKeyDown(GLFW_KEY_A))
+        {
+            transform.position -= glm::normalize(glm::cross(transform.front(), transform.up())) * speed * Gfx::deltaTime();
+        }
+
+        if (Input::GetKeyDown(GLFW_KEY_D))
+        {
+            transform.position += glm::normalize(glm::cross(transform.front(), transform.up())) * speed * Gfx::deltaTime();
+        }
+
+        if (Input::GetKeyDown(GLFW_KEY_SPACE))
+        {
+            transform.position += speed * Gfx::deltaTime() * transform.up();
+        }
+
+        if (Input::GetKeyDown(GLFW_KEY_LEFT_CONTROL))
+        {
+            transform.position -= speed * Gfx::deltaTime() * transform.up();
+        }
+
+        if (Input::GetMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT))
+        {
+            float xoffset = (mousePosition.x - lastMousePosition.x) * sensetivity;
+            float yoffset = (lastMousePosition.y - mousePosition.y) * sensetivity;
+
+            glm::vec3 eluerAngles = transform.eulerAngles();
+            eluerAngles.x += xoffset;
+            eluerAngles.y += yoffset;
+            eluerAngles.y = glm::clamp(eluerAngles.y, -89.0f, 89.0f);
+
+            transform.rotation = glm::quat(glm::radians(eluerAngles));
+        }
+
+        lastMousePosition = mousePosition;
+    }
+
+private:
+    float speed;
+    float sensetivity;
+
+    glm::vec2 lastMousePosition;
+};
 
 int main(int argc, char** argv)
 {
@@ -19,14 +87,11 @@ int main(int argc, char** argv)
     Gfx::initialize(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, "Learn OpenGL", Gfx::WindowFlags::NONE);
 
     Gfx::Texture texture = Gfx::Texture::fromFile("Resources/Textures/Grass_Block.jpg");
-    Gfx::Camera cam{45, 0.1f, 100};
-    cam.unwrap(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
-    cam.position() = {-0.3f, 0.3f, 2.0f};
 
-    Gfx::onWindowSizeChangedDelegate().bind([&cam](uint32_t w, uint32_t h)
-    {
-        cam.unwrap(w, h);
-    });
+    std::shared_ptr<Scene> scene = Scene::create("MyScene");
+    std::shared_ptr<GameObject> cameraGameObject = scene->addGameObject("MainCamera", {0.0f, 0.0f, -2.5f});
+    std::shared_ptr<Camera> cameraComponent = cameraGameObject->addComponent<Camera>(45, 0.1f, 100);
+    std::shared_ptr<FlyCameraController> flyCameraController = cameraGameObject->addComponent<FlyCameraController>();
 
     static Gfx::Mesh cube{
         // vertex array [position, uv]
@@ -91,55 +156,11 @@ int main(int argc, char** argv)
     meshTransform.scale = {1.0f, 1.0f, 1.0f};
     glm::vec3 rotation = glm::degrees(glm::eulerAngles(meshTransform.rotation));
 
-    glm::vec2 mousePosition {};
-    glm::vec2 lastMousePosition {};
-    float mouseSensetivity {0.1f};
-
     Gfx::setClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     while (!Gfx::windowShouldClose())
     {
         Gfx::beginFrame();
-
-        static float cameraSpeed = 0.05f * Gfx::deltaTime();
-        if (Input::GetKeyDown(GLFW_KEY_W))
-        {
-            cam.position() += cameraSpeed * cam.front();
-        }
-
-        if (Input::GetKeyDown(GLFW_KEY_S))
-        {
-            cam.position() -= cameraSpeed * cam.front();
-        }
-
-        if (Input::GetKeyDown(GLFW_KEY_A))
-        {
-            cam.position() -= glm::normalize(glm::cross(cam.front(), cam.up())) * cameraSpeed;
-        }
-
-        if (Input::GetKeyDown(GLFW_KEY_D))
-        {
-            cam.position() += glm::normalize(glm::cross(cam.front(), cam.up())) * cameraSpeed;
-        }
-
-        if (Input::GetKeyDown(GLFW_KEY_SPACE))
-        {
-            cam.position() += cameraSpeed * cam.up();
-        }
-
-        if (Input::GetKeyDown(GLFW_KEY_LEFT_CONTROL))
-        {
-            cam.position() -= cameraSpeed * cam.up();
-        }
-
-        cam.update();
-
-        Gfx::setShaderProgram(Gfx::defaultShaderProgram());
-
-        Gfx::setShaderMat4x4Value(Gfx::defaultShaderProgram(), "view", cam.view());
-        Gfx::setShaderMat4x4Value(Gfx::defaultShaderProgram(), "projection", cam.projection());
-
-        Gfx::updateTextureData(texture);
-        Gfx::drawIndexedGeometry(cube.transform(), cube.vertices(), cube.indicies(), Gfx::defaultShaderProgram(), cube.vertexBufferObject(), cube.vertexArrayObject(), attributes);
+        scene->update();
 
         rotation.y += 100 * Gfx::deltaTime();
         if (rotation.y >= 360.0f)
@@ -148,51 +169,47 @@ int main(int argc, char** argv)
         }
         meshTransform.rotation = glm::quat(glm::radians(rotation));
 
-        mousePosition = Input::GetMousePosition();
+        Gfx::setShaderProgram(Gfx::defaultShaderProgram());
 
-        float xoffset = (mousePosition.x - lastMousePosition.x) * mouseSensetivity;
-        float yoffset = (lastMousePosition.y - mousePosition.y) * mouseSensetivity;
+        Gfx::setShaderMat4x4Value(Gfx::defaultShaderProgram(), "view", cameraComponent->view());
+        Gfx::setShaderMat4x4Value(Gfx::defaultShaderProgram(), "projection", cameraComponent->projection());
 
-        lastMousePosition = mousePosition;
-
-        if (Input::GetMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT))
-        {
-            float& cameraYaw = cam.yaw();
-            float& camperaPitch = cam.pitch();
-
-            cameraYaw += xoffset;
-            camperaPitch += yoffset;
-            camperaPitch = glm::clamp(camperaPitch, -89.0f, 89.0f);
-        }
+        Gfx::updateTextureData(texture);
+        Gfx::drawIndexedGeometry(cube.transform(), cube.vertices(), cube.indicies(), Gfx::defaultShaderProgram(), cube.vertexBufferObject(), cube.vertexArrayObject(), attributes);
 
         if (ImGui::Begin("Camera"))
         {
-            float camPos[3] { cam.position().x, cam.position().y, cam.position().z};
-            if(ImGui::DragFloat3("Position", camPos, 0.1f, std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max()))
+            Gfx::Transform& transform = cameraGameObject->m_transform;
             {
-                cam.position() = {camPos[0], camPos[1], camPos[2]};
+                float position[3] { 
+                    transform.position.x,
+                    transform.position.y,
+                    transform.position.z
+                };
+                if(ImGui::DragFloat3("Position", position, 0.1f, std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max()))
+                {
+                    transform.position = {position[0], position[1], position[2]};
+                }
             }
-            if (ImGui::SliderFloat("near", &cam.near(), 0.0f, cam.far()))
             {
-                const glm::uvec2 windowSize = Gfx::getWindowSize();
-                cam.unwrap(windowSize.x, windowSize.y);
+                const glm::vec3 eulerAngles = transform.eulerAngles();
+                float rotation[3] { 
+                    eulerAngles.x,
+                    eulerAngles.y,
+                    eulerAngles.z
+                };
+                if(ImGui::DragFloat3("Rotation", rotation, 0.1f, std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max()))
+                {
+                    transform.rotation = glm::quat(glm::radians(glm::vec3(rotation[0], rotation[1], rotation[2])));
+                }
             }
-            if (ImGui::SliderFloat("far", &cam.far(), cam.near(), 1000))
-            {
-                const glm::uvec2 windowSize = Gfx::getWindowSize();
-                cam.unwrap(windowSize.x, windowSize.y);
-            }
-            if (ImGui::SliderFloat("fov", &cam.fov(), 0, 180))
-            {
-                const glm::uvec2 windowSize = Gfx::getWindowSize();
-                cam.unwrap(windowSize.x, windowSize.y);
-            }
+
+            ImGui::SliderFloat("near", &cameraComponent->near(), 0.0f, cameraComponent->far());
+            ImGui::SliderFloat("far", &cameraComponent->far(), cameraComponent->near(), 1000);
+            ImGui::SliderFloat("fov", &cameraComponent->fov(), 0, 180);
+
             ImGui::End();
         }
-
-        ImGui::Begin("Mouse");
-        ImGui::SliderFloat("Sensetivity", &mouseSensetivity, 0.0f, 1.0f);
-        ImGui::End();
 
         ImGui::Begin("Object");
         ImGui::InputFloat("Position.x", &meshTransform.position.x);

@@ -79,9 +79,18 @@ public:
 
     struct Transform
     {
+        static constexpr glm::vec3 VECTOR_UP = { 0.0f, 1.0f, 0.0f };
+        static constexpr glm::vec3 VECTOR_FRONT = { 0.0f, 0.0f, -1.0f };
+
         glm::vec3 position;
         glm::quat rotation;
         glm::vec3 scale;
+
+        glm::vec3 eulerAngles() const;
+        glm::vec3 direction() const;
+        glm::vec3 front() const;
+        glm::vec3 right() const;
+        glm::vec3 up() const;
     };
     
 
@@ -154,52 +163,6 @@ public:
         uint8_t* m_data;
         int32_t m_width;
         int32_t m_height;
-    };
-
-
-    class Camera
-    {
-        static constexpr glm::vec3 VECTOR_UP = { 0.0f, 1.0f, 0.0f };
-        static constexpr glm::vec3 VECTOR_FRONT = { 0.0f, 0.0f, -1.0f };
-
-    public:
-        Camera(float fov, float near, float far);
-        void unwrap(uint32_t width, uint32_t height);
-
-        void update();
-
-        float& fov();
-        float& near();
-        float& far();
-
-        float& pitch();
-        float& yaw();
-        float& roll();
-
-        glm::vec3& position();
-
-        const glm::vec3& up() const;
-        const glm::vec3& front() const;
-
-        const glm::mat4& view() const;
-        const glm::mat4& projection() const;
-
-    private:
-        float m_fov;
-        float m_near;
-        float m_far;
-
-        float m_pitch {};
-        float m_yaw { -90.0f };
-        float m_roll {};
-
-        glm::vec3 m_position {};
-        glm::vec3 m_front {};
-        glm::vec3 m_right {};
-        glm::vec3 m_up {};
-
-        glm::mat4 m_view;
-        glm::mat4 m_projection;
     };
 
 public:

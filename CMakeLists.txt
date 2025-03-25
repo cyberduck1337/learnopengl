@@ -27,6 +27,8 @@ add_executable(learnopengl
     Source/Gfx.cpp
     Source/SceneGraph.hpp
     Source/SceneGraph.cpp
+    Source/Components/Camera.hpp
+    Source/Components/Camera.cpp
 
     ${imgui_SOURCE_DIR}/imgui.cpp
     ${imgui_SOURCE_DIR}/imgui_draw.cpp
@@ -47,6 +49,7 @@ target_link_libraries(learnopengl PUBLIC
 target_include_directories(learnopengl PUBLIC 
     ${stb_SOURCE_DIR}
     ${imgui_SOURCE_DIR}
+    Source
 )
 
 target_compile_definitions(learnopengl PUBLIC
