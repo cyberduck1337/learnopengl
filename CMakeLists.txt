@@ -11,6 +11,7 @@ FetchContent_Declare(glm GIT_REPOSITORY	https://github.com/g-truc/glm.git GIT_TA
 FetchContent_Declare(korelib GIT_REPOSITORY https://github.com/cyberduck1337/korelib.git GIT_TAG master)
 FetchContent_Declare(stb GIT_REPOSITORY https://github.com/blitz-research/stb.git GIT_TAG master)
 FetchContent_Declare(imgui GIT_REPOSITORY https://github.com/ocornut/imgui.git GIT_TAG v1.91.4-docking)
+FetchContent_Declare(ctti GIT_REPOSITORY https://github.com/Manu343726/ctti.git GIT_TAG master)
 
 FetchContent_MakeAvailable(glfw)
 FetchContent_MakeAvailable(glad)
@@ -18,6 +19,7 @@ FetchContent_MakeAvailable(glm)
 FetchContent_MakeAvailable(korelib)
 FetchContent_MakeAvailable(stb)
 FetchContent_MakeAvailable(imgui)
+FetchContent_MakeAvailable(ctti)
 
 add_executable(learnopengl
     Source/main.cpp
@@ -37,6 +39,7 @@ target_link_libraries(learnopengl PUBLIC
     glfw
     glad
     glm
+    ctti
 )
 
 target_include_directories(learnopengl PUBLIC 
