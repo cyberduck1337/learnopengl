@@ -25,6 +25,8 @@ add_executable(learnopengl
     Source/main.cpp
     Source/Gfx.hpp
     Source/Gfx.cpp
+    Source/SceneGraph.hpp
+    Source/SceneGraph.cpp
 
     ${imgui_SOURCE_DIR}/imgui.cpp
     ${imgui_SOURCE_DIR}/imgui_draw.cpp
