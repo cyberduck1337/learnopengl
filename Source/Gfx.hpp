@@ -123,7 +123,7 @@ public:
     class Texture
     {
     public:
-        Texture(uint8_t* data, int32_t width, int32_t height);
+        Texture(uint8_t* data, int32_t width, int32_t height, int32_t channels);
         ~Texture();
 
         static Texture fromFile(const std::filesystem::path& path);
@@ -139,6 +139,7 @@ public:
         uint8_t* m_data;
         int32_t m_width;
         int32_t m_height;
+        int32_t m_channels;
     };
 
 public:

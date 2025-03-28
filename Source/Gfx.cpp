@@ -85,7 +85,7 @@ Gfx::Texture Gfx::Texture::fromFile(const std::filesystem::path& path)
     uint8_t* data = stbi_load(path.string().c_str(), &width, &height, &channels, 0);
     KORELIB_VERIFY_THROW(data != nullptr, korelib::RuntimeException, fmt::format("Failed to load image: {}", path.string()));
 
-    return { data, width,  height};
+    return { data, width, height, channels};
 }
 
 Gfx::TextureIdType Gfx::Texture::textureId() const
