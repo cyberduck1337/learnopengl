@@ -373,6 +373,16 @@ void Gfx::updateTextureData(const Texture& texture)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture.width(), texture.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, texture.data());
 }
 
+std::shared_ptr<Camera> Gfx::getActiveCamera()
+{
+    return g_activeCamera;
+}
+
+void Gfx::setActiveCamera(std::shared_ptr<Camera> camera)
+{
+    g_activeCamera = std::move(camera);
+}
+
 void Gfx::endFrame()
 {
     glfwPollEvents();

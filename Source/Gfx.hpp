@@ -167,6 +167,8 @@ public:
     static TextureIdType createTextureObject();
     static void bindTexture(const Texture& texture);
     static void updateTextureData(const Texture& texture);
+    static std::shared_ptr<class Camera> getActiveCamera();
+    static void setActiveCamera(std::shared_ptr<Camera> camera);
     static void endFrame();
     static void destroy();
 
@@ -186,6 +188,7 @@ private:
     static inline ShaderType g_defaultShader {};
     static inline float g_deltaTime {};
     static inline float g_lastFrameTime{};
+    static inline std::shared_ptr<class Camera> g_activeCamera{};
 };
 
 
