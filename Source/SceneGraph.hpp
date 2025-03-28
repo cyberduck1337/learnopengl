@@ -77,6 +77,44 @@ public:
         return component;
     }
 
+    template<typename T>
+    std::vector<std::shared_ptr<T>> getComponents() requires(std::derived_from<T, class Component>)
+    {
+        std::vector<std::shared_ptr<T>> result{};
+
+        constexpr ctti::unnamed_type_id_t typeId = ctti::unnamed_type_id<T>();
+        if (m_componentTypeToIndicesMap.contains(typeId))
+        {
+            const std::vector<size_t>& indices = m_componentTypeToIndicesMap.at(typeId);
+            if (!indices.empty())
+            {
+                for (size_t index : indices)
+                {
+                    auto it = m_children.begin();
+                    std::advance(it, index);
+
+                    std::shared_ptr<Entity> component = *it;
+                    KORELIB_VERIFY_THROW(component->kind() == Entity::Kind::COMPONENT, korelib::RuntimeException, "Unexpected Entity type");
+                    result.emplace_back(std::move(std::static_pointer_cast<T>(component)));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    template<typename T>
+    std::shared_ptr<T> getComponent() requires(std::derived_from<T, class Component>)
+    {
+        std::vector<std::shared_ptr<T>> components = getComponents<T>();
+        if (!components.empty())
+        {
+            return components[0];
+        }
+
+        return nullptr;
+    }
+
 public:
     Gfx::Transform m_transform;
 
