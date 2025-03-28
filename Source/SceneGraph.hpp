@@ -131,6 +131,7 @@ public:
     }
 
     virtual void update() override;
+    std::shared_ptr<GameObject> gameObject();
 
 protected:
     Component(const std::string& name, const std::shared_ptr<Entity>& parent);

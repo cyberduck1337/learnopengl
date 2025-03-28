@@ -48,6 +48,11 @@ void Component::update()
 {
 }
 
+std::shared_ptr<GameObject> Component::gameObject()
+{
+    return std::static_pointer_cast<GameObject>(getParent());
+}
+
 std::shared_ptr<Scene> Scene::create(const std::string& name)
 {
     return std::make_shared<Scene>(name);
