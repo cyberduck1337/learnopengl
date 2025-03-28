@@ -27,46 +27,12 @@ void glfwWindowResizeCallback(GLFWwindow* window, int width, int height)
     }
 }
 
-Gfx::Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indicies) : m_vertices(vertices), m_indicies(indicies), m_vertexBufferObject(createVertexBufferObject()), m_vertexArrayObject(createVertexArrayObject())
 {
 }
 
-Gfx::Mesh::Mesh(std::vector<Vertex>&& vertices, const std::vector<uint32_t>&& indicies) : m_vertices(std::move(vertices)), m_indicies(std::move(indicies)), m_vertexBufferObject(createVertexBufferObject()), m_vertexArrayObject(createVertexArrayObject())
 {
-}
 
-const std::vector<Gfx::Vertex>& Gfx::Mesh::vertices() const
-{
-    return m_vertices;
-}
 
-std::vector<Gfx::Vertex>& Gfx::Mesh::vertices()
-{
-    return m_vertices;
-}
-
-const std::vector<uint32_t>& Gfx::Mesh::indicies() const
-{
-    return m_indicies;
-}
-
-Gfx::VertexBufferObjectType Gfx::Mesh::vertexBufferObject() const
-{
-    return m_vertexBufferObject;
-}
-
-Gfx::VertexArrayObjectType Gfx::Mesh::vertexArrayObject() const
-{
-    return m_vertexArrayObject;
-}
-
-Gfx::Transform& Gfx::Mesh::transform()
-{
-    return m_transform;
-}
-
-Gfx::Texture::Texture(uint8_t* data, int32_t width, int32_t height) : m_textureId(Gfx::createTextureObject()), m_data(data), m_width(width), m_height(height)
-{
 }
 
 Gfx::Texture::~Texture()
