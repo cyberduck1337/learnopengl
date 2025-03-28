@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstring>
 #include <filesystem>
 #include <functional>
 #include <optional>
@@ -124,6 +125,7 @@ public:
     {
     public:
         Texture(uint8_t* data, int32_t width, int32_t height, int32_t channels);
+        Texture(const Texture& other);
         ~Texture();
 
         static Texture fromFile(const std::filesystem::path& path);

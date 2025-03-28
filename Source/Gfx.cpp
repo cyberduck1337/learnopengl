@@ -27,12 +27,21 @@ void glfwWindowResizeCallback(GLFWwindow* window, int width, int height)
     }
 }
 
+Gfx::Texture::Texture(uint8_t* data, int32_t width, int32_t height, int32_t channels) : m_textureId(Gfx::createTextureObject()), m_data(data), m_width(width), m_height(height), m_channels(channels)
 {
 }
 
+Gfx::Texture::Texture(const Texture& other)
 {
+    m_textureId = other.m_textureId;
+    m_width = other.m_width;
+    m_height = other.m_height;
+    m_channels = other.m_channels;
 
+    const size_t dataSize = m_width*m_height*m_channels;
+    m_data = new uint8_t[dataSize];
 
+    std::memcpy(m_data, other.m_data, dataSize);
 }
 
 Gfx::Texture::~Texture()
