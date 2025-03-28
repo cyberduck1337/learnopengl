@@ -92,30 +92,6 @@ public:
         glm::vec3 right() const;
         glm::vec3 up() const;
     };
-    
-
-    class Mesh
-    {
-    public:
-        Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indicies);
-        Mesh(std::vector<Vertex>&& vertices, const std::vector<uint32_t>&& indicies);
-
-        const std::vector<Vertex>& vertices() const;
-        std::vector<Vertex>& vertices();
-        const std::vector<uint32_t>& indicies() const;
-        VertexBufferObjectType vertexBufferObject() const;
-        VertexArrayObjectType vertexArrayObject() const;
-
-        Transform& transform();
-
-    private:
-        std::vector<Vertex> m_vertices;
-        std::vector<uint32_t> m_indicies;
-        VertexBufferObjectType m_vertexBufferObject;
-        VertexArrayObjectType m_vertexArrayObject;
-
-        Transform m_transform;
-    };
 
     enum class ShaderKind : uint8_t
     {
