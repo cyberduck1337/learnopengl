@@ -305,7 +305,7 @@ void Gfx::destroyShader(Gfx::ShaderType shader)
     glDeleteShader(shader);
 }
 
-void Gfx::drawIndexedGeometry(const Gfx::Transform& transform, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indicies, ShaderType shaderProgram, VertexBufferObjectType vertexBufferObject, VertexArrayObjectType vertexArrayObject, const std::vector<Attribute>& attributesDataOffsets)
+void Gfx::drawIndexedGeometry(const Gfx::Transform& transform, const std::vector<Vertex>& vertices, const std::vector<std::array<uint32_t, 3>>& indicies, ShaderType shaderProgram, VertexBufferObjectType vertexBufferObject, VertexArrayObjectType vertexArrayObject, const std::vector<Attribute>& attributesDataOffsets)
 {
     const glm::mat4 translation = glm::translate(transform.position);
     const glm::mat4 rotation = glm::toMat4(transform.rotation);
@@ -350,7 +350,7 @@ void Gfx::drawIndexedGeometry(const Gfx::Transform& transform, const std::vector
         glVertexAttribPointer(attributePointer.index, attributePointer.numComponents, attributeType, attributePointer.aligned, attributePointer.stride, (void*)attributePointer.offset);
         glEnableVertexAttribArray(attributePointer.index);
     }
-    glDrawElements(GL_TRIANGLES, indicies.size(), GL_UNSIGNED_INT, indicies.data());
+    glDrawElements(GL_TRIANGLES, indicies.size() * 3, GL_UNSIGNED_INT, indicies.data());
 }
 
 Gfx::TextureIdType Gfx::createTextureObject()
