@@ -14,6 +14,152 @@
 #include <thread>
 #include <limits>
 
+class Material : public Component
+{
+public:
+    Material(const std::shared_ptr<Entity>& parent) : Component("Material", parent), m_shaderProgram(Gfx::defaultShaderProgram())
+    {
+    }
+
+    void update() override
+    {
+        Gfx::setShaderProgram(m_shaderProgram);
+
+        if (m_texture.has_value())
+        {
+            Gfx::updateTextureData(m_texture.value());
+        }
+
+        if (const std::shared_ptr<Camera>& camera = Gfx::getActiveCamera(); camera != nullptr)
+        {
+            Gfx::setShaderMat4x4Value(Gfx::defaultShaderProgram(), "view", camera->view());
+            Gfx::setShaderMat4x4Value(Gfx::defaultShaderProgram(), "projection", camera->projection());
+        }
+    }
+
+    Gfx::ShaderType shaderProgram() const
+    {
+        return m_shaderProgram;
+    }
+
+    void setTexture(const Gfx::Texture& texture)
+    {
+        m_texture = texture;
+    }
+
+    std::vector<Gfx::Attribute> attributes() const
+    {
+        return
+        {
+            {
+                .index = 0,
+                .numComponents = 3,
+                .stride = sizeof(Gfx::Vertex),
+                .type = Gfx::Attribute::Type::FLOAT,
+                .offset = offsetof(Gfx::Vertex, position),
+                .aligned = false
+            },
+            {
+                .index = 1,
+                .numComponents = 2,
+                .stride = sizeof(Gfx::Vertex),
+                .type = Gfx::Attribute::Type::FLOAT,
+                .offset = offsetof(Gfx::Vertex, uv),
+                .aligned = false
+            }
+        };
+    }
+
+protected:
+    Gfx::ShaderType m_shaderProgram;
+    std::optional<Gfx::Texture> m_texture;
+};
+
+class MeshRenderer : public Component
+{
+public:
+    enum class PrimitiveType : uint8_t
+    {
+        CUBE,
+    };
+
+public:
+    MeshRenderer(const std::shared_ptr<Entity>& parent, PrimitiveType primitiveType) : Component("MeshRenderer", parent), m_vertexBufferObject(Gfx::createVertexBufferObject()), m_vertexArrayObject(Gfx::createVertexArrayObject())
+    {
+        m_material = gameObject()->addComponent<Material>();
+
+        switch (primitiveType)
+        {
+            case PrimitiveType::CUBE:
+            {
+                m_vertices.reserve(24);
+                m_vertices = {
+                    /*[ 0]*/ {{-0.5f, -0.5f,  0.5f},     {0.0f, 1.0f / 3}},  // front  - bottom - left
+                    /*[ 1]*/ {{-0.5f,  0.5f,  0.5f}, {0.0f, 1.0f / 3 * 2}},  // front  - top    - left
+                    /*[ 2]*/ {{ 0.5f,  0.5f,  0.5f}, {1.0f, 1.0f / 3 * 2}},  // front  - top    - right
+                    /*[ 3]*/ {{ 0.5f, -0.5f,  0.5f},     {1.0f, 1.0f / 3}},  // front  - bottom - right
+                    /*[ 4]*/ {{-0.5f, -0.5f, -0.5f},     {0.0f, 1.0f / 3}},  // back   - bottom - left
+                    /*[ 5]*/ {{-0.5f,  0.5f, -0.5f}, {0.0f, 1.0f / 3 * 2}},  // back   - top    - left
+                    /*[ 6]*/ {{ 0.5f,  0.5f, -0.5f}, {1.0f, 1.0f / 3 * 2}},  // back   - top    - right
+                    /*[ 7]*/ {{ 0.5f, -0.5f, -0.5f},     {1.0f, 1.0f / 3}},  // back   - bottom - right
+                    /*[ 8]*/ {{-0.5f, -0.5f, -0.5f},     {0.0f, 1.0f / 3}},  // left   - bottom - back
+                    /*[ 9]*/ {{-0.5f,  0.5f, -0.5f}, {0.0f, 1.0f / 3 * 2}},  // left   - top    - back
+                    /*[10]*/ {{-0.5f,  0.5f,  0.5f}, {1.0f, 1.0f / 3 * 2}},  // left   - top    - front
+                    /*[11]*/ {{-0.5f, -0.5f,  0.5f},     {1.0f, 1.0f / 3}},  // left   - bottom - front
+                    /*[12]*/ {{ 0.5f, -0.5f, -0.5f},     {0.0f, 1.0f / 3}},  // right  - bottom - back
+                    /*[13]*/ {{ 0.5f,  0.5f, -0.5f}, {0.0f, 1.0f / 3 * 2}},  // right  - top    - back
+                    /*[14]*/ {{ 0.5f,  0.5f,  0.5f}, {1.0f, 1.0f / 3 * 2}},  // right  - top    - front
+                    /*[15]*/ {{ 0.5f, -0.5f,  0.5f},     {1.0f, 1.0f / 3}},  // right  - bottom - front
+                    /*[16]*/ {{-0.5f,  0.5f,  0.5f}, {0.0f, 1.0f / 3 * 2}},  // top    - near   - left
+                    /*[17]*/ {{-0.5f,  0.5f, -0.5f},         {0.0f, 1.0f}},  // top    - far    - left
+                    /*[18]*/ {{ 0.5f,  0.5f, -0.5f},         {1.0f, 1.0f}},  // top    - far    - right
+                    /*[19]*/ {{ 0.5f,  0.5f,  0.5f}, {1.0f, 1.0f / 3 * 2}},  // top    - near   - right
+                    /*[20]*/ {{-0.5f, -0.5f,  0.5f},         {0.0f, 0.0f}},  // bottom - near   - left
+                    /*[21]*/ {{-0.5f, -0.5f, -0.5f},     {0.0f, 1.0f / 3}},  // bottom - far    - left
+                    /*[22]*/ {{ 0.5f, -0.5f, -0.5f},     {1.0f, 1.0f / 3}},  // bottom - far    - right
+                    /*[23]*/ {{ 0.5f, -0.5f,  0.5f},         {1.0f, 0.0f}},  // bottom - near   - right
+                };
+
+                m_triangles.reserve(36);
+                m_triangles = {
+                     { 2,  1,  0},  {0,  3,  2}, // front
+                     { 7,  5,  6},  {7,  4,  5}, // back
+                     { 8, 11, 10},  {9,  8, 10}, // left
+                     {15, 12, 13}, {13, 14, 15}, // right
+                     {17, 16, 19}, {18, 17, 19}, // top
+                     {21, 22, 20}, {23, 20, 22}, // bottom
+                };
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    void update() override
+    {
+        Gfx::Transform& transform = gameObject()->m_transform;
+        Gfx::drawIndexedGeometry(
+            transform,
+            m_vertices,
+            m_triangles,
+            m_material->shaderProgram(),
+            m_vertexBufferObject,
+            m_vertexArrayObject,
+            m_material->attributes()
+        );
+    }
+
+protected:
+    std::vector<Gfx::Vertex> m_vertices;
+    std::vector<std::array<uint32_t, 3>> m_triangles;
+
+    Gfx::VertexBufferObjectType m_vertexBufferObject;
+    Gfx::VertexArrayObjectType m_vertexArrayObject;
+
+    std::shared_ptr<Material> m_material;
+};
+
 class FlyCameraController : public Component
 {
 public:
@@ -81,101 +227,51 @@ private:
 
 int main(int argc, char** argv)
 {
-    static constexpr uint32_t INITIAL_WINDOW_WIDTH = 800;
-    static constexpr uint32_t INITIAL_WINDOW_HEIGHT = 600;
+    static constexpr uint32_t INITIAL_WINDOW_WIDTH = 1280;
+    static constexpr uint32_t INITIAL_WINDOW_HEIGHT = 720;
 
     Gfx::initialize(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, "Learn OpenGL", Gfx::WindowFlags::NONE);
 
-    Gfx::Texture texture = Gfx::Texture::fromFile("Resources/Textures/Grass_Block.jpg");
-
     std::shared_ptr<Scene> scene = Scene::create("MyScene");
-    std::shared_ptr<GameObject> cameraGameObject = scene->addGameObject("MainCamera", {0.0f, 0.0f, -2.5f});
+    std::shared_ptr<GameObject> cameraGameObject = scene->addGameObject("MainCamera", {-0.5f, 0.0f, -2.5f});
+    cameraGameObject->m_transform.rotation = glm::quat(glm::radians(glm::vec3(90.0f, 0.0f, 0.0f)));
     std::shared_ptr<Camera> cameraComponent = cameraGameObject->addComponent<Camera>(45, 0.1f, 100);
     std::shared_ptr<FlyCameraController> flyCameraController = cameraGameObject->addComponent<FlyCameraController>();
-
-    static Gfx::Mesh cube{
-        // vertex array [position, uv]
-        {
-        /*[ 0]*/ {{-0.5f, -0.5f,  0.5f},     {0.0f, 1.0f / 3}},  // front  - bottom - left
-        /*[ 1]*/ {{-0.5f,  0.5f,  0.5f}, {0.0f, 1.0f / 3 * 2}},  // front  - top    - left
-        /*[ 2]*/ {{ 0.5f,  0.5f,  0.5f}, {1.0f, 1.0f / 3 * 2}},  // front  - top    - right
-        /*[ 3]*/ {{ 0.5f, -0.5f,  0.5f},     {1.0f, 1.0f / 3}},  // front  - bottom - right
-        /*[ 4]*/ {{-0.5f, -0.5f, -0.5f},     {0.0f, 1.0f / 3}},  // back   - bottom - left
-        /*[ 5]*/ {{-0.5f,  0.5f, -0.5f}, {0.0f, 1.0f / 3 * 2}},  // back   - top    - left
-        /*[ 6]*/ {{ 0.5f,  0.5f, -0.5f}, {1.0f, 1.0f / 3 * 2}},  // back   - top    - right
-        /*[ 7]*/ {{ 0.5f, -0.5f, -0.5f},     {1.0f, 1.0f / 3}},  // back   - bottom - right
-        /*[ 8]*/ {{-0.5f, -0.5f, -0.5f},     {0.0f, 1.0f / 3}},  // left   - bottom - back
-        /*[ 9]*/ {{-0.5f,  0.5f, -0.5f}, {0.0f, 1.0f / 3 * 2}},  // left   - top    - back
-        /*[10]*/ {{-0.5f,  0.5f,  0.5f}, {1.0f, 1.0f / 3 * 2}},  // left   - top    - front
-        /*[11]*/ {{-0.5f, -0.5f,  0.5f},     {1.0f, 1.0f / 3}},  // left   - bottom - front
-        /*[12]*/ {{ 0.5f, -0.5f, -0.5f},     {0.0f, 1.0f / 3}},  // right  - bottom - back
-        /*[13]*/ {{ 0.5f,  0.5f, -0.5f}, {0.0f, 1.0f / 3 * 2}},  // right  - top    - back
-        /*[14]*/ {{ 0.5f,  0.5f,  0.5f}, {1.0f, 1.0f / 3 * 2}},  // right  - top    - front
-        /*[15]*/ {{ 0.5f, -0.5f,  0.5f},     {1.0f, 1.0f / 3}},  // right  - bottom - front
-        /*[16]*/ {{-0.5f,  0.5f,  0.5f}, {0.0f, 1.0f / 3 * 2}},  // top    - near   - left
-        /*[17]*/ {{-0.5f,  0.5f, -0.5f},         {0.0f, 1.0f}},  // top    - far    - left
-        /*[18]*/ {{ 0.5f,  0.5f, -0.5f},         {1.0f, 1.0f}},  // top    - far    - right
-        /*[19]*/ {{ 0.5f,  0.5f,  0.5f}, {1.0f, 1.0f / 3 * 2}},  // top    - near   - right
-        /*[20]*/ {{-0.5f, -0.5f,  0.5f},         {0.0f, 0.0f}},  // bottom - near   - left
-        /*[21]*/ {{-0.5f, -0.5f, -0.5f},     {0.0f, 1.0f / 3}},  // bottom - far    - left
-        /*[22]*/ {{ 0.5f, -0.5f, -0.5f},     {1.0f, 1.0f / 3}},  // bottom - far    - right
-        /*[23]*/ {{ 0.5f, -0.5f,  0.5f},         {1.0f, 0.0f}},  // bottom - near   - right
-        },
-        // indicies array
-        {
-             2,  1,  0,   0,  3,  2,  // front
-             7,  5,  6,   7,  4,  5,  // back
-             8, 11, 10,   9,  8, 10,  // left
-            15, 12, 13,  13, 14, 15,  // right
-            17, 16, 19,  18, 17, 19,  // top
-            21, 22, 20,  23, 20, 22,  // bottom
-        }
-    };
-
-    static const std::vector<Gfx::Attribute> attributes
+    std::shared_ptr<GameObject> cube = scene->addGameObject("Cube", {0.0f, 0.0f, 0.0f});
+    cube->addComponent<MeshRenderer>(MeshRenderer::PrimitiveType::CUBE);
+    if (std::shared_ptr<Material> cubeMaterial = cube->getComponent<Material>(); cubeMaterial != nullptr)
     {
-        {
-            .index = 0,
-            .numComponents = 3,
-            .stride = sizeof(Gfx::Vertex),
-            .type = Gfx::Attribute::Type::FLOAT,
-            .offset = offsetof(Gfx::Vertex, position),
-            .aligned = false
-        },
-        {
-            .index = 1,
-            .numComponents = 2,
-            .stride = sizeof(Gfx::Vertex),
-            .type = Gfx::Attribute::Type::FLOAT,
-            .offset = offsetof(Gfx::Vertex, uv),
-            .aligned = false
-        }
-    };
+        Gfx::Texture texture = Gfx::Texture::fromFile("./Resources/Textures/Grass_Block.jpg");
+        cubeMaterial->setTexture(std::move(texture));
+    }
 
-    Gfx::Transform& meshTransform = cube.transform();
-    meshTransform.scale = {1.0f, 1.0f, 1.0f};
+    Gfx::Transform& meshTransform = cube->m_transform;
     glm::vec3 rotation = glm::degrees(glm::eulerAngles(meshTransform.rotation));
 
+    Gfx::setActiveCamera(cameraComponent);
     Gfx::setClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     while (!Gfx::windowShouldClose())
     {
         Gfx::beginFrame();
         scene->update();
 
+        rotation.x += 30 * Gfx::deltaTime();
         rotation.y += 100 * Gfx::deltaTime();
+        rotation.z += 50 * Gfx::deltaTime();
+
+        if (rotation.x >= 360.0f)
+        {
+            rotation.x = 0;
+        }
         if (rotation.y >= 360.0f)
         {
             rotation.y = 0;
         }
+        if (rotation.z >= 360.0f)
+        {
+            rotation.z = 0;
+        }
         meshTransform.rotation = glm::quat(glm::radians(rotation));
-
-        Gfx::setShaderProgram(Gfx::defaultShaderProgram());
-
-        Gfx::setShaderMat4x4Value(Gfx::defaultShaderProgram(), "view", cameraComponent->view());
-        Gfx::setShaderMat4x4Value(Gfx::defaultShaderProgram(), "projection", cameraComponent->projection());
-
-        Gfx::updateTextureData(texture);
-        Gfx::drawIndexedGeometry(cube.transform(), cube.vertices(), cube.indicies(), Gfx::defaultShaderProgram(), cube.vertexBufferObject(), cube.vertexArrayObject(), attributes);
 
         if (ImGui::Begin("Camera"))
         {
