@@ -86,7 +86,7 @@ public:
 public:
     MeshRenderer(const std::shared_ptr<Entity>& parent, PrimitiveType primitiveType) : Component("MeshRenderer", parent), m_vertexBufferObject(Gfx::createVertexBufferObject()), m_vertexArrayObject(Gfx::createVertexArrayObject())
     {
-        m_material = gameObject()->addComponent<Material>();
+        m_material = gameObject().addComponent<Material>();
 
         switch (primitiveType)
         {
@@ -138,7 +138,7 @@ public:
 
     void update() override
     {
-        Gfx::Transform& transform = gameObject()->m_transform;
+        Gfx::Transform& transform = gameObject().m_transform;
         Gfx::drawIndexedGeometry(
             transform,
             m_vertices,
@@ -235,7 +235,7 @@ public:
     void update()
     {
         glm::vec3 rot = {rotationSpeed.x * Gfx::deltaTime(), rotationSpeed.y * Gfx::deltaTime(), rotationSpeed.z * Gfx::deltaTime()}; 
-        gameObject()->m_transform.rotate(std::move(rot));
+        gameObject().m_transform.rotate(std::move(rot));
     }
 
 public:
@@ -257,10 +257,10 @@ int main(int argc, char** argv)
     std::shared_ptr<GameObject> cube = scene->addGameObject("Cube", {0.0f, 0.0f, 0.0f});
     cube->addComponent<MeshRenderer>(MeshRenderer::PrimitiveType::CUBE);
     cube->addComponent<CubeRotator>();
-    if (std::shared_ptr<Material> cubeMaterial = cube->getComponent<Material>(); cubeMaterial != nullptr)
+    if (std::optional<std::reference_wrapper<Material>> cubeMaterial = cube->getComponent<Material>(); cubeMaterial.has_value())
     {
         Gfx::Texture texture = Gfx::Texture::fromFile("./Resources/Textures/Grass_Block.jpg");
-        cubeMaterial->setTexture(std::move(texture));
+        cubeMaterial->get().setTexture(std::move(texture));
     }
 
     Gfx::setActiveCamera(cameraComponent);
