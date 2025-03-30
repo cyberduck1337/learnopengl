@@ -92,6 +92,8 @@ public:
         glm::vec3 front() const;
         glm::vec3 right() const;
         glm::vec3 up() const;
+
+        void rotate(const glm::vec3& eulerAngles);
     };
 
     enum class ShaderKind : uint8_t
