@@ -48,9 +48,11 @@ void Component::update()
 {
 }
 
-std::shared_ptr<GameObject> Component::gameObject()
+GameObject& Component::gameObject()
 {
-    return std::static_pointer_cast<GameObject>(getParent());
+    const std::shared_ptr<GameObject>& parent = std::static_pointer_cast<GameObject>(getParent());
+    KORELIB_VERIFY_THROW(parent != nullptr, korelib::RuntimeException, "parent is nullptr");
+    return *parent;
 }
 
 std::shared_ptr<Scene> Scene::create(const std::string& name)

@@ -78,9 +78,9 @@ public:
     }
 
     template<typename T>
-    std::vector<std::shared_ptr<T>> getComponents() requires(std::derived_from<T, class Component>)
+    std::vector<std::reference_wrapper<T>> getComponents() requires(std::derived_from<T, class Component>)
     {
-        std::vector<std::shared_ptr<T>> result{};
+        std::vector<std::reference_wrapper<T>> result{};
 
         constexpr ctti::unnamed_type_id_t typeId = ctti::unnamed_type_id<T>();
         if (m_componentTypeToIndicesMap.contains(typeId))
@@ -93,9 +93,10 @@ public:
                     auto it = m_children.begin();
                     std::advance(it, index);
 
-                    std::shared_ptr<Entity> component = *it;
+                    std::shared_ptr<T> component = std::static_pointer_cast<T>(*it);
+                    KORELIB_VERIFY_THROW(component != nullptr, korelib::RuntimeException, "component == nullptr");
                     KORELIB_VERIFY_THROW(component->kind() == Entity::Kind::COMPONENT, korelib::RuntimeException, "Unexpected Entity type");
-                    result.emplace_back(std::move(std::static_pointer_cast<T>(component)));
+                    result.emplace_back(*component);
                 }
             }
         }
@@ -104,15 +105,15 @@ public:
     }
 
     template<typename T>
-    std::shared_ptr<T> getComponent() requires(std::derived_from<T, class Component>)
+    std::optional<std::reference_wrapper<T>> getComponent() requires(std::derived_from<T, class Component>)
     {
-        std::vector<std::shared_ptr<T>> components = getComponents<T>();
+        std::vector<std::reference_wrapper<T>> components = getComponents<T>();
         if (!components.empty())
         {
             return components[0];
         }
 
-        return nullptr;
+        return std::nullopt;
     }
 
 public:
@@ -131,7 +132,7 @@ public:
     }
 
     virtual void update() override;
-    std::shared_ptr<GameObject> gameObject();
+    GameObject& gameObject();
 
 protected:
     Component(const std::string& name, const std::shared_ptr<Entity>& parent);
