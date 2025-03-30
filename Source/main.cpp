@@ -225,6 +225,23 @@ private:
     glm::vec2 lastMousePosition;
 };
 
+class CubeRotator : public Component
+{
+public:
+    CubeRotator(const std::shared_ptr<Entity>& parent) : Component("CubeRotator", parent), rotationSpeed(50, 30, 80)
+    {
+    }
+
+    void update()
+    {
+        glm::vec3 rot = {rotationSpeed.x * Gfx::deltaTime(), rotationSpeed.y * Gfx::deltaTime(), rotationSpeed.z * Gfx::deltaTime()}; 
+        gameObject()->m_transform.rotate(std::move(rot));
+    }
+
+public:
+    glm::vec3 rotationSpeed;
+};
+
 int main(int argc, char** argv)
 {
     static constexpr uint32_t INITIAL_WINDOW_WIDTH = 1280;
@@ -239,14 +256,12 @@ int main(int argc, char** argv)
     std::shared_ptr<FlyCameraController> flyCameraController = cameraGameObject->addComponent<FlyCameraController>();
     std::shared_ptr<GameObject> cube = scene->addGameObject("Cube", {0.0f, 0.0f, 0.0f});
     cube->addComponent<MeshRenderer>(MeshRenderer::PrimitiveType::CUBE);
+    cube->addComponent<CubeRotator>();
     if (std::shared_ptr<Material> cubeMaterial = cube->getComponent<Material>(); cubeMaterial != nullptr)
     {
         Gfx::Texture texture = Gfx::Texture::fromFile("./Resources/Textures/Grass_Block.jpg");
         cubeMaterial->setTexture(std::move(texture));
     }
-
-    Gfx::Transform& meshTransform = cube->m_transform;
-    glm::vec3 rotation = glm::degrees(glm::eulerAngles(meshTransform.rotation));
 
     Gfx::setActiveCamera(cameraComponent);
     Gfx::setClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -254,24 +269,6 @@ int main(int argc, char** argv)
     {
         Gfx::beginFrame();
         scene->update();
-
-        rotation.x += 30 * Gfx::deltaTime();
-        rotation.y += 100 * Gfx::deltaTime();
-        rotation.z += 50 * Gfx::deltaTime();
-
-        if (rotation.x >= 360.0f)
-        {
-            rotation.x = 0;
-        }
-        if (rotation.y >= 360.0f)
-        {
-            rotation.y = 0;
-        }
-        if (rotation.z >= 360.0f)
-        {
-            rotation.z = 0;
-        }
-        meshTransform.rotation = glm::quat(glm::radians(rotation));
 
         if (ImGui::Begin("Camera"))
         {
@@ -306,19 +303,6 @@ int main(int argc, char** argv)
 
             ImGui::End();
         }
-
-        ImGui::Begin("Object");
-        ImGui::InputFloat("Position.x", &meshTransform.position.x);
-        ImGui::InputFloat("Position.y", &meshTransform.position.y);
-        ImGui::InputFloat("Position.z", &meshTransform.position.z);
-        if (ImGui::SliderFloat("Rotation.x", &rotation.x, 0, 359.9f) || ImGui::SliderFloat("Rotation.y", &rotation.y, 0, 359.9f) || ImGui::SliderFloat("Rotation.z", &rotation.z, 0, 359.9f))
-        {
-            meshTransform.rotation = glm::quat(glm::radians(rotation));
-        }
-        ImGui::InputFloat("Scale.x", &meshTransform.scale.x);
-        ImGui::InputFloat("Scale.y", &meshTransform.scale.y);
-        ImGui::InputFloat("Scale.z", &meshTransform.scale.z);
-        ImGui::End();
 
         Gfx::endFrame();
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
