@@ -85,7 +85,7 @@ int32_t Gfx::Texture::height() const
 
 glm::vec3 Gfx::Transform::eulerAngles() const
 {
-    return glm::degrees(glm::eulerAngles(rotation));
+    return glm::degrees(glm::eulerAngles(glm::normalize(rotation)));
 }
 
 glm::vec3 Gfx::Transform::direction() const
