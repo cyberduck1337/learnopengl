@@ -204,8 +204,8 @@ public:
 
         if (Input::GetMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT))
         {
-            float xoffset = (mousePosition.x - lastMousePosition.x) * sensetivity;
-            float yoffset = (lastMousePosition.y - mousePosition.y) * sensetivity;
+            float xoffset = (lastMousePosition.x - mousePosition.x) * sensetivity;
+            float yoffset = (mousePosition.y - lastMousePosition.y) * sensetivity;
 
             glm::vec3 eluerAngles = transform.eulerAngles();
             eluerAngles.x += xoffset;

@@ -59,7 +59,7 @@ public:
 
         void main()
         {
-            FragColor = texture(u_texture, -uv);
+            FragColor = texture(u_texture, uv);
         }
     )";
     

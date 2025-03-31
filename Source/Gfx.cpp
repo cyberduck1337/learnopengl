@@ -106,7 +106,7 @@ glm::vec3 Gfx::Transform::front() const
 
 glm::vec3 Gfx::Transform::right() const
 {
-    return glm::normalize(glm::cross(front(), VECTOR_UP));
+    return glm::normalize(glm::cross(VECTOR_UP, front()));
 }
 
 glm::vec3 Gfx::Transform::up() const
