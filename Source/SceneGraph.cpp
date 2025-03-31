@@ -68,6 +68,8 @@ std::shared_ptr<GameObject> Scene::addGameObject(const std::string& name, const 
 {
     std::shared_ptr<GameObject> go = std::make_shared<GameObject>(name, parent == nullptr ? std::static_pointer_cast<Entity>(shared_from_this()) : parent);
     go->m_transform.position = position;
+    go->m_transform.rotation = glm::quat(glm::radians(glm::vec3(0.0f, 0.0f, 0.0f)));
+    go->m_transform.scale = {1.0f, 1.0f, 1.0f};
     m_children.emplace_back(go);
     return std::static_pointer_cast<GameObject>(go);
 }
