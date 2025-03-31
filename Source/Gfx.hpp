@@ -18,6 +18,11 @@
 #include "glm/gtx/euler_angles.hpp"
 
 #include "imgui.h"
+#include "ImGuizmo.h"
+#include "GraphEditor.h"
+#include "ImCurveEdit.h"
+#include "ImGradient.h"
+#include "ImSequencer.h"
 
 class Gfx final : public korelib::StaticOnlyClass
 {

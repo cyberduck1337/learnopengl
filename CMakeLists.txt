@@ -12,6 +12,7 @@ FetchContent_Declare(korelib GIT_REPOSITORY https://github.com/cyberduck1337/kor
 FetchContent_Declare(stb GIT_REPOSITORY https://github.com/blitz-research/stb.git GIT_TAG master)
 FetchContent_Declare(imgui GIT_REPOSITORY https://github.com/ocornut/imgui.git GIT_TAG v1.91.4-docking)
 FetchContent_Declare(ctti GIT_REPOSITORY https://github.com/Manu343726/ctti.git GIT_TAG master)
+FetchContent_Declare(imguizmo GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo GIT_TAG master)
 
 FetchContent_MakeAvailable(glfw)
 FetchContent_MakeAvailable(glad)
@@ -20,6 +21,7 @@ FetchContent_MakeAvailable(korelib)
 FetchContent_MakeAvailable(stb)
 FetchContent_MakeAvailable(imgui)
 FetchContent_MakeAvailable(ctti)
+FetchContent_MakeAvailable(imguizmo)
 
 add_executable(learnopengl
     Source/main.cpp
@@ -36,6 +38,12 @@ add_executable(learnopengl
     ${imgui_SOURCE_DIR}/imgui_widgets.cpp
     ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
     ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+
+    ${imguizmo_SOURCE_DIR}/GraphEditor.cpp
+    ${imguizmo_SOURCE_DIR}/ImCurveEdit.cpp
+    ${imguizmo_SOURCE_DIR}/ImGradient.cpp
+    ${imguizmo_SOURCE_DIR}/ImGuizmo.cpp
+    ${imguizmo_SOURCE_DIR}/ImSequencer.cpp
 )
 
 target_link_libraries(learnopengl PUBLIC
@@ -49,6 +57,7 @@ target_link_libraries(learnopengl PUBLIC
 target_include_directories(learnopengl PUBLIC 
     ${stb_SOURCE_DIR}
     ${imgui_SOURCE_DIR}
+    ${imguizmo_SOURCE_DIR}
     Source
 )
 
