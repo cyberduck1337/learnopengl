@@ -318,12 +318,7 @@ void Gfx::destroyShader(Gfx::ShaderType shader)
 
 void Gfx::drawIndexedGeometry(const Gfx::Transform& transform, const std::vector<Vertex>& vertices, const std::vector<std::array<uint32_t, 3>>& indicies, ShaderType shaderProgram, VertexBufferObjectType vertexBufferObject, VertexArrayObjectType vertexArrayObject, const std::vector<Attribute>& attributesDataOffsets)
 {
-    const glm::mat4 translation = glm::translate(transform.position);
-    const glm::mat4 rotation = glm::toMat4(transform.rotation);
-    const glm::mat4 scale = glm::scale(transform.scale);
-
-    glm::mat4 model = translation * rotation * scale;
-    Gfx::setShaderMat4x4Value(Gfx::defaultShaderProgram(), "model", std::move(model));
+    Gfx::setShaderMat4x4Value(Gfx::defaultShaderProgram(), "model", transform.model());
 
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject); // 0. select VertexBufferObject to work with
     glBufferData(GL_ARRAY_BUFFER, sizeof(std::vector<Vertex>::value_type) * vertices.size(), vertices.data(), GL_STATIC_DRAW); // 1. copy vertex data to the video card
