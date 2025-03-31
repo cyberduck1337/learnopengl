@@ -120,7 +120,7 @@ void Gfx::Transform::rotate(const glm::vec3& eulerAngles)
     rotation *= glm::inverse(rotation) * eulerRot * rotation;
 }
 
-glm::mat4 Gfx::Transform::model()
+glm::mat4 Gfx::Transform::model() const
 {
     return (glm::translate(position) * glm::toMat4(rotation) * glm::scale(scale));
 }
