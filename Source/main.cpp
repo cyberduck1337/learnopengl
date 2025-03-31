@@ -250,13 +250,13 @@ int main(int argc, char** argv)
     Gfx::initialize(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, "Learn OpenGL", Gfx::WindowFlags::NONE);
 
     std::shared_ptr<Scene> scene = Scene::create("MyScene");
-    std::shared_ptr<GameObject> cameraGameObject = scene->addGameObject("MainCamera", {-0.5f, 0.0f, -2.5f});
+    std::shared_ptr<GameObject> cameraGameObject = scene->addGameObject("MainCamera", {0.0f, 0.0f, -2.5f});
     cameraGameObject->m_transform.rotation = glm::quat(glm::radians(glm::vec3(90.0f, 0.0f, 0.0f)));
     std::shared_ptr<Camera> cameraComponent = cameraGameObject->addComponent<Camera>(45, 0.1f, 100);
     std::shared_ptr<FlyCameraController> flyCameraController = cameraGameObject->addComponent<FlyCameraController>();
     std::shared_ptr<GameObject> cube = scene->addGameObject("Cube", {0.0f, 0.0f, 0.0f});
     cube->addComponent<MeshRenderer>(MeshRenderer::PrimitiveType::CUBE);
-    cube->addComponent<CubeRotator>();
+    //cube->addComponent<CubeRotator>();
     if (std::optional<std::reference_wrapper<Material>> cubeMaterial = cube->getComponent<Material>(); cubeMaterial.has_value())
     {
         Gfx::Texture texture = Gfx::Texture::fromFile("./Resources/Textures/Grass_Block.jpg");
@@ -270,38 +270,76 @@ int main(int argc, char** argv)
         Gfx::beginFrame();
         scene->update();
 
-        if (ImGui::Begin("Camera"))
+        static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
+        static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
+
+        glm::mat4 mod = cube->m_transform.model();
+        glm::mat4 camView = cameraComponent->view();
+        glm::mat4 camProj = cameraComponent->projection();
+
+        glm::vec3 camEuler = cameraGameObject->m_transform.eulerAngles();
+        glm::vec3 cubeEuler = cube->m_transform.eulerAngles();
+
+        ImGui::Begin("Stats");
+        if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
+            mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+        ImGui::SameLine();
+        if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
+            mCurrentGizmoOperation = ImGuizmo::ROTATE;
+        ImGui::SameLine();
+        if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
+            mCurrentGizmoOperation = ImGuizmo::SCALE;
+        ImGui::InputFloat3("Cube.Position", glm::value_ptr(cube->m_transform.position));
+        ImGui::InputFloat3("Cube.EulerAngles", glm::value_ptr(cubeEuler));
+        ImGui::InputFloat3("Cube.Scale", glm::value_ptr(cube->m_transform.scale));
+        ImGui::Separator();
+        ImGui::InputFloat4("Cube.Model[0]", glm::value_ptr(mod[0]));
+        ImGui::InputFloat4("Cube.Model[1]", glm::value_ptr(mod[1]));
+        ImGui::InputFloat4("Cube.Model[2]", glm::value_ptr(mod[2]));
+        ImGui::InputFloat4("Cube.Model[3]", glm::value_ptr(mod[3]));
+        ImGui::Separator();
+        ImGui::InputFloat4("Camera.View[0]", glm::value_ptr(camView[0]));
+        ImGui::InputFloat4("Camera.View[1]", glm::value_ptr(camView[1]));
+        ImGui::InputFloat4("Camera.View[2]", glm::value_ptr(camView[2]));
+        ImGui::InputFloat4("Camera.View[3]", glm::value_ptr(camView[3]));
+        ImGui::Separator();
+        ImGui::InputFloat4("Camera.Proj[0]", glm::value_ptr(camProj[0]));
+        ImGui::InputFloat4("Camera.Proj[1]", glm::value_ptr(camProj[1]));
+        ImGui::InputFloat4("Camera.Proj[2]", glm::value_ptr(camProj[2]));
+        ImGui::InputFloat4("Camera.Proj[3]", glm::value_ptr(camProj[3]));
+        ImGui::Separator();
+        ImGui::InputFloat3("Camera.Position", glm::value_ptr(cameraGameObject->m_transform.position));
+        ImGui::InputFloat3("Camera.EulerAngles", glm::value_ptr(camEuler));
+
+        ImGui::SliderFloat("Camera.near", &cameraComponent->near(), 0.0f, cameraComponent->far());
+        ImGui::SliderFloat("Camera.far", &cameraComponent->far(), cameraComponent->near(), 1000);
+        ImGui::SliderFloat("Camera.fov", &cameraComponent->fov(), 0, 180);
+        ImGui::End();
+
+        ImGuizmo::SetOrthographic(false);
+        ImGuizmo::BeginFrame();
+        ImGuizmo::SetRect(0, 0, Gfx::getWindowSize().x, Gfx::getWindowSize().y);
+
+        ImGuizmo::Manipulate(
+            glm::value_ptr(camView),
+            glm::value_ptr(camProj),
+            mCurrentGizmoOperation,
+            mCurrentGizmoMode,
+            glm::value_ptr(mod)
+        );
+
+        glm::vec3 scale;
+        glm::quat rotation;
+        glm::vec3 translation;
+        glm::vec3 skew;
+        glm::vec4 perspective;
+        glm::decompose(mod, scale, rotation, translation, skew, perspective);
+
+        if (ImGuizmo::IsUsing())
         {
-            Gfx::Transform& transform = cameraGameObject->m_transform;
-            {
-                float position[3] { 
-                    transform.position.x,
-                    transform.position.y,
-                    transform.position.z
-                };
-                if(ImGui::DragFloat3("Position", position, 0.1f, std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max()))
-                {
-                    transform.position = {position[0], position[1], position[2]};
-                }
-            }
-            {
-                const glm::vec3 eulerAngles = transform.eulerAngles();
-                float rotation[3] { 
-                    eulerAngles.x,
-                    eulerAngles.y,
-                    eulerAngles.z
-                };
-                if(ImGui::DragFloat3("Rotation", rotation, 0.1f, std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max()))
-                {
-                    transform.rotation = glm::quat(glm::radians(glm::vec3(rotation[0], rotation[1], rotation[2])));
-                }
-            }
-
-            ImGui::SliderFloat("near", &cameraComponent->near(), 0.0f, cameraComponent->far());
-            ImGui::SliderFloat("far", &cameraComponent->far(), cameraComponent->near(), 1000);
-            ImGui::SliderFloat("fov", &cameraComponent->fov(), 0, 180);
-
-            ImGui::End();
+            cube->m_transform.position = translation;
+            cube->m_transform.rotation = rotation;
+            cube->m_transform.scale = scale;
         }
 
         Gfx::endFrame();
