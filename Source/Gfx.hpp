@@ -99,6 +99,8 @@ public:
         glm::vec3 up() const;
 
         void rotate(const glm::vec3& eulerAngles);
+
+        glm::mat4 model();
     };
 
     enum class ShaderKind : uint8_t

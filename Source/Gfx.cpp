@@ -120,6 +120,11 @@ void Gfx::Transform::rotate(const glm::vec3& eulerAngles)
     rotation *= glm::inverse(rotation) * eulerRot * rotation;
 }
 
+glm::mat4 Gfx::Transform::model()
+{
+    return (glm::translate(position) * glm::toMat4(rotation) * glm::scale(scale));
+}
+
 void Gfx::initialize(uint32_t width, uint32_t height, const std::string& title, WindowFlags flags)
 {
     KORELIB_VERIFY_THROW(glfwInit() == GLFW_TRUE, korelib::RuntimeException, "Failed to initialize glfw");
