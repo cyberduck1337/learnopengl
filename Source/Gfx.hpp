@@ -159,6 +159,10 @@ public:
     static float deltaTime();
     static bool windowShouldClose();
     static glm::uvec2 getWindowSize();
+    static glm::ivec2 getWindowPosition();
+    static std::vector<MonitorType> getMonitors();
+    static glm::ivec2 getMonitorOffset(MonitorType monitor);
+    static VideoModeType getVideoModeForMonitor(MonitorType monitor);
     static void setClearColor(float r, float g, float b, float a);
     static void clearBackground();
     static void swap();

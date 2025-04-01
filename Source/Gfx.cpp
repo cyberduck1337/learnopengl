@@ -202,6 +202,13 @@ glm::uvec2 Gfx::getWindowSize()
     return {static_cast<glm::uvec2::value_type>(w), static_cast<glm::uvec2::value_type>(h)};
 }
 
+glm::ivec2 Gfx::getWindowPosition()
+{
+    glm::ivec2 windowPos{};
+    glfwGetWindowPos(g_window, &windowPos.x, &windowPos.y);
+    return windowPos;
+}
+
 void Gfx::setClearColor(float r, float g, float b, float a)
 {
     glClearColor(r, g, b, a);
