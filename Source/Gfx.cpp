@@ -216,6 +216,34 @@ glm::ivec2 Gfx::getWindowPosition()
     return windowPos;
 }
 
+std::vector<Gfx::MonitorType> Gfx::getMonitors()
+{
+    int monitorsCount{};
+    Gfx::MonitorType* nativeMonitors = glfwGetMonitors(&monitorsCount);
+
+    std::vector<Gfx::MonitorType> monitors{};
+    monitors.reserve(monitorsCount);
+    for (int monitorIndex = 0; monitorIndex < monitorsCount; monitorIndex++)
+    {
+        monitors.emplace_back(nativeMonitors[monitorIndex]);
+    }
+
+    return monitors;
+}
+
+glm::ivec2 Gfx::getMonitorOffset(MonitorType monitor)
+{
+    glm::ivec2 monitorOffset{};
+    glfwGetMonitorPos(monitor, &monitorOffset.x, &monitorOffset.y);
+
+    return monitorOffset;
+}
+
+Gfx::VideoModeType Gfx::getVideoModeForMonitor(MonitorType monitor)
+{
+    return glfwGetVideoMode(monitor);
+}
+
 void Gfx::setClearColor(float r, float g, float b, float a)
 {
     glClearColor(r, g, b, a);

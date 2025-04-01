@@ -76,6 +76,8 @@ public:
     };
 
     using WindowType = struct GLFWwindow*;
+    using MonitorType = struct GLFWmonitor*;
+    using VideoModeType = const struct GLFWvidmode*;
     using WindowReizeDelegate = korelib::Delegate<void, uint32_t, uint32_t>;
 
     using VertexBufferObjectType = uint32_t; // stores data
