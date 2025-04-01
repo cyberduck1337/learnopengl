@@ -316,10 +316,6 @@ int main(int argc, char** argv)
         ImGui::SliderFloat("Camera.fov", &cameraComponent->fov(), 0, 180);
         ImGui::End();
 
-        ImGuizmo::SetOrthographic(false);
-        ImGuizmo::BeginFrame();
-        ImGuizmo::SetRect(0, 0, Gfx::getWindowSize().x, Gfx::getWindowSize().y);
-
         ImGuizmo::Manipulate(
             glm::value_ptr(camView),
             glm::value_ptr(camProj),

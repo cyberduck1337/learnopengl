@@ -180,6 +180,13 @@ void Gfx::beginFrame()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
+    glm::ivec2 windowPosition = Gfx::getWindowPosition();
+    glm::uvec2 windowSize = Gfx::getWindowSize();
+
+    ImGuizmo::SetRect(windowPosition.x, windowPosition.y, windowSize.x, windowSize.y);
+    ImGuizmo::SetOrthographic(false);
+    ImGuizmo::BeginFrame();
+
     glEnable(GL_DEPTH_TEST);
 }
 
