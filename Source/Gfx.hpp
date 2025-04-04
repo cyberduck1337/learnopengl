@@ -132,29 +132,6 @@ public:
         bool aligned;
     };
 
-    class Texture
-    {
-    public:
-        Texture(uint8_t* data, int32_t width, int32_t height, int32_t channels);
-        Texture(const Texture& other);
-        ~Texture();
-
-        static Texture fromFile(const std::filesystem::path& path);
-
-        TextureIdType textureId() const;
-        const uint8_t* const data() const;
-
-        int32_t width() const;
-        int32_t height() const;
-
-    private:
-        TextureIdType m_textureId;
-        uint8_t* m_data;
-        int32_t m_width;
-        int32_t m_height;
-        int32_t m_channels;
-    };
-
 public:
     static void initialize(uint32_t width, uint32_t height, const std::string& title, WindowFlags flags);
     static void beginFrame();
@@ -180,8 +157,8 @@ public:
     static void destroyShader(ShaderType shader);
     static void drawIndexedGeometry(const Transform& transform, const std::vector<Vertex>& vertecies, const std::vector<std::array<uint32_t, 3>>& indicies, ShaderType shaderProgram, VertexBufferObjectType vertexBufferObject, VertexArrayObjectType vertexArrayObject, const std::vector<Attribute>& attributesDataOffsets);
     static TextureIdType createTextureObject();
-    static void bindTexture(const Texture& texture);
-    static void updateTextureData(const Texture& texture);
+    static void bindTexture(TextureIdType textureId);
+    static TextureIdType loadTextureFromFile(const std::filesystem::path& path);
     static std::shared_ptr<class Camera> getActiveCamera();
     static void setActiveCamera(std::shared_ptr<Camera> camera);
     static void endFrame();

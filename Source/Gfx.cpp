@@ -27,62 +27,6 @@ void glfwWindowResizeCallback(GLFWwindow* window, int width, int height)
     }
 }
 
-Gfx::Texture::Texture(uint8_t* data, int32_t width, int32_t height, int32_t channels) : m_textureId(Gfx::createTextureObject()), m_data(data), m_width(width), m_height(height), m_channels(channels)
-{
-}
-
-Gfx::Texture::Texture(const Texture& other)
-{
-    m_textureId = other.m_textureId;
-    m_width = other.m_width;
-    m_height = other.m_height;
-    m_channels = other.m_channels;
-
-    const size_t dataSize = m_width*m_height*m_channels;
-    m_data = new uint8_t[dataSize];
-
-    std::memcpy(m_data, other.m_data, dataSize);
-}
-
-Gfx::Texture::~Texture()
-{
-    stbi_image_free(m_data);
-}
-
-Gfx::Texture Gfx::Texture::fromFile(const std::filesystem::path& path)
-{
-    KORELIB_VERIFY_THROW(std::filesystem::exists(path), korelib::RuntimeException, fmt::format("File '{}' does not exist!", path.string()));
-
-    int32_t width {};
-    int32_t height {};
-    int32_t channels {};
-
-    uint8_t* data = stbi_load(path.string().c_str(), &width, &height, &channels, 0);
-    KORELIB_VERIFY_THROW(data != nullptr, korelib::RuntimeException, fmt::format("Failed to load image: {}", path.string()));
-
-    return { data, width, height, channels};
-}
-
-Gfx::TextureIdType Gfx::Texture::textureId() const
-{
-    return m_textureId;
-}
-
-const uint8_t* const Gfx::Texture::data() const
-{
-    return m_data;
-}
-
-int32_t Gfx::Texture::width() const
-{
-    return m_width;
-}
-
-int32_t Gfx::Texture::height() const
-{
-    return m_height;
-}
-
 glm::vec3 Gfx::Transform::eulerAngles() const
 {
     return glm::degrees(glm::eulerAngles(glm::normalize(rotation)));
@@ -409,16 +353,28 @@ Gfx::TextureIdType Gfx::createTextureObject()
     return texture;
 }
 
-void Gfx::bindTexture(const Texture& texture)
+void Gfx::bindTexture(TextureIdType textureId)
 {
-    glBindTexture(GL_TEXTURE_2D, texture.textureId());
+    glBindTexture(GL_TEXTURE_2D, textureId);
 }
 
-void Gfx::updateTextureData(const Texture& texture)
+Gfx::TextureIdType Gfx::loadTextureFromFile(const std::filesystem::path& path)
 {
-    bindTexture(texture);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture.width(), texture.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, texture.data());
+    int w, h, n;
+    uint8_t* data = stbi_load(path.string().c_str(), &w, &h, &n, 0);
+
+    Gfx::TextureIdType textureId = Gfx::createTextureObject();
+    Gfx::bindTexture(textureId);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+    stbi_image_free(data);
+
+    return textureId;
 }
 
 std::shared_ptr<Camera> Gfx::getActiveCamera()
