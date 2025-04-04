@@ -35,7 +35,6 @@ protected:
     Entity(const std::string& name, const std::shared_ptr<Entity>& parent);
     Entity(const std::string& name);
 
-    void refreshChildIndices();
 
 protected:
     std::list<std::shared_ptr<Entity>> m_children;
