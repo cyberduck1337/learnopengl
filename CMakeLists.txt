@@ -29,6 +29,7 @@ add_executable(learnopengl
     Source/Gfx.cpp
     Source/SceneGraph.hpp
     Source/SceneGraph.cpp
+    Source/Resource.hpp
     Source/Components/Camera.hpp
     Source/Components/Camera.cpp
 
