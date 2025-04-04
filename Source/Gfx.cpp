@@ -353,7 +353,7 @@ Gfx::TextureIdType Gfx::createTextureObject()
     return texture;
 }
 
-void Gfx::bindTexture(TextureIdType textureId)
+void Gfx::setActiveTexture(TextureIdType textureId)
 {
     glBindTexture(GL_TEXTURE_2D, textureId);
 }
