@@ -157,8 +157,8 @@ public:
     static void destroyShader(ShaderType shader);
     static void drawIndexedGeometry(const Transform& transform, const std::vector<Vertex>& vertecies, const std::vector<std::array<uint32_t, 3>>& indicies, ShaderType shaderProgram, VertexBufferObjectType vertexBufferObject, VertexArrayObjectType vertexArrayObject, const std::vector<Attribute>& attributesDataOffsets);
     static TextureIdType createTextureObject();
-    static TextureIdType loadTextureFromFile(const std::filesystem::path& path);
     static void setActiveTexture(TextureIdType textureId);
+    static TextureIdType textureFromData(uint8_t* data, int32_t width, int32_t height);
     static std::shared_ptr<class Camera> getActiveCamera();
     static void setActiveCamera(std::shared_ptr<Camera> camera);
     static void endFrame();

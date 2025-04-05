@@ -3,9 +3,6 @@
 #include "fmt/format.h"
 #include "RuntimeException.hpp"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
@@ -358,21 +355,16 @@ void Gfx::setActiveTexture(TextureIdType textureId)
     glBindTexture(GL_TEXTURE_2D, textureId);
 }
 
-Gfx::TextureIdType Gfx::loadTextureFromFile(const std::filesystem::path& path)
+Gfx::TextureIdType Gfx::textureFromData(uint8_t* data, int32_t width, int32_t height)
 {
-    int w, h, n;
-    uint8_t* data = stbi_load(path.string().c_str(), &w, &h, &n, 0);
-
     Gfx::TextureIdType textureId = Gfx::createTextureObject();
-    Gfx::bindTexture(textureId);
+    Gfx::setActiveTexture(textureId);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-
-    stbi_image_free(data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 
     return textureId;
 }
