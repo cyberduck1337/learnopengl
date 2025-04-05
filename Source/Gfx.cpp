@@ -299,14 +299,19 @@ void Gfx::destroyShader(Gfx::ShaderType shader)
     glDeleteShader(shader);
 }
 
-void Gfx::drawIndexedGeometry(const Gfx::Transform& transform, const std::vector<Vertex>& vertices, const std::vector<std::array<uint32_t, 3>>& indicies, ShaderType shaderProgram, VertexBufferObjectType vertexBufferObject, VertexArrayObjectType vertexArrayObject, const std::vector<Attribute>& attributesDataOffsets)
+void Gfx::updateVertexBufferData(VertexBufferObjectType vertexBufferObject, const std::vector<Vertex> &vertices)
+{
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(std::vector<Vertex>::value_type) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+}
+
+void Gfx::drawIndexedGeometry(const Gfx::Transform& transform, const std::vector<std::array<uint32_t, 3>>& triangles, ShaderType shaderProgram, VertexBufferObjectType vertexBufferObject, VertexArrayObjectType vertexArrayObject, const std::vector<Attribute>& attributesDataOffsets)
 {
     Gfx::setShaderMat4x4Value(Gfx::defaultShaderProgram(), "model", transform.model());
 
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject); // 0. select VertexBufferObject to work with
-    glBufferData(GL_ARRAY_BUFFER, sizeof(std::vector<Vertex>::value_type) * vertices.size(), vertices.data(), GL_STATIC_DRAW); // 1. copy vertex data to the video card
-    glBindVertexArray(vertexArrayObject); // 2. select VertexArrayObject to work with
-    for (auto&& attributePointer : attributesDataOffsets) // 3. set the vertex attributes pointers
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glBindVertexArray(vertexArrayObject);
+    for (auto&& attributePointer : attributesDataOffsets)
     {
         GLenum attributeType {};
         switch (attributePointer.type)
@@ -339,7 +344,7 @@ void Gfx::drawIndexedGeometry(const Gfx::Transform& transform, const std::vector
         glVertexAttribPointer(attributePointer.index, attributePointer.numComponents, attributeType, attributePointer.aligned, attributePointer.stride, (void*)attributePointer.offset);
         glEnableVertexAttribArray(attributePointer.index);
     }
-    glDrawElements(GL_TRIANGLES, indicies.size() * 3, GL_UNSIGNED_INT, indicies.data());
+    glDrawElements(GL_TRIANGLES, triangles.size() * 3, GL_UNSIGNED_INT, triangles.data());
 }
 
 Gfx::TextureIdType Gfx::createTextureObject()
