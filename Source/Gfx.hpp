@@ -155,7 +155,7 @@ public:
     static void setShaderMat4x4Value(ShaderType shaderProgram, const std::string& name, const glm::mat4& value);
     static void setShaderProgram(ShaderType program);
     static void destroyShader(ShaderType shader);
-    static void updateVertexBufferData(VertexBufferObjectType vertexBufferObject, const std::vector<Vertex>& vertecies);
+    static void updateVertexBufferData(VertexBufferObjectType vertexBufferObject, const std::vector<Vertex>& vertices);
     static void drawIndexedGeometry(const Transform& transform, const std::vector<std::array<uint32_t, 3>>& triangles, ShaderType shaderProgram, VertexBufferObjectType vertexBufferObject, VertexArrayObjectType vertexArrayObject, const std::vector<Attribute>& attributesDataOffsets);
     static TextureIdType createTextureObject();
     static void setActiveTexture(TextureIdType textureId);
